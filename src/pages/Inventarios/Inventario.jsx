@@ -34,7 +34,7 @@ export default function Inventario() {
 
     try {
       // 3. Usar la configuración en la petición GET
-      const { data } = await client.get("/pos/api/productos/", config);
+      const { data } = await client.get("/pos/productos/", config);
       setProductos(data);
     } catch (err) {
       console.error("Error cargando productos:", err.response?.data || err);

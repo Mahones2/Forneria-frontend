@@ -63,7 +63,7 @@ export default function DetalleVenta() {
 
         try {
             // RUTA AJUSTADA: GET para un detalle específico
-            const { data } = await client.get(`/pos/api/ventas/${id}/`, config);
+            const { data } = await client.get(`/pos/ventas/${id}/`, config);
             setVenta(data);
         } catch (err) {
             console.error(`Error al cargar Venta #${id}:`, err.response?.data || err);

@@ -56,7 +56,7 @@ function POS() {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             
             // Cargar Productos
-            const productosRes = await client.get("/pos/api/productos/", config);
+            const productosRes = await client.get("/pos/productos/", config);
             const productosConNumeros = productosRes.data.map(p => ({
                 ...p,
                 precio_venta: new Decimal(p.precio_venta || 0),
@@ -65,7 +65,7 @@ function POS() {
             setProductos(productosConNumeros);
 
             // Cargar Categorías
-            const categoriasRes = await client.get("/pos/api/categorias/", config);
+            const categoriasRes = await client.get("/pos/categorias/", config);
             setCategorias(categoriasRes.data);
             
         } catch (err) {
@@ -204,7 +204,7 @@ function POS() {
 
     try {
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        await client.post("/pos/api/ventas/", ventaData, config);
+        await client.post("/pos/ventas/", ventaData, config);
         
         // Éxito
         let msgExito = `¡Venta Registrada!\nTotal: ${formatCurrency(cartTotal)}`;

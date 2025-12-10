@@ -41,7 +41,7 @@ export default function OrdenesActivas() {
 
     try {
       // ⚠️ Ruta que trae pedidos pendientes/activos
-      const { data } = await client.get("pos/api/pedidos/", config);
+      const { data } = await client.get("/pedidos/", config);
       setPedidos(data);
     } catch (err) {
       console.error("Error al cargar pedidos:", err.response?.data || err);

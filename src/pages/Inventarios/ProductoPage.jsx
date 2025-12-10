@@ -21,7 +21,7 @@ export default function ProductoPage({ mode = "form" }) {
 
   useEffect(() => {
     if (productoId) {
-      client.get(`/productos/${productoId}/`).then(({ data }) => {
+      client.get(`/pos/productos/${productoId}/`).then(({ data }) => {
         setProducto(data);
         setForm({
           nombre: data.nombre,
@@ -40,9 +40,9 @@ export default function ProductoPage({ mode = "form" }) {
     e.preventDefault();
     try {
       if (productoId) {
-        await client.put(`/productos/${productoId}/`, form);
+        await client.put(`/pos/productos/${productoId}/`, form);
       } else {
-        await client.post(`/productos/`, form);
+        await client.post(`/pos/productos/`, form);
       }
       setSaved(true);
       setTimeout(() => navigate("/inventario"), 1500);
@@ -54,7 +54,7 @@ export default function ProductoPage({ mode = "form" }) {
   async function handleDelete(e) {
     e.preventDefault();
     try {
-      await client.delete(`/productos/${productoId}/`);
+      await client.delete(`/pos/productos/${productoId}/`);
       setDeleted(true);
       setTimeout(() => navigate("/inventario"), 1500);
     } catch (err) {

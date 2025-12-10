@@ -64,7 +64,7 @@ export default function Ventas() {
         };
 
         try {
-            const { data } = await client.get("/pos/api/ventas/", config);
+            const { data } = await client.get("/pos/ventas/", config);
             setVentas(data); 
 
         } catch (err) {

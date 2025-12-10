@@ -2,7 +2,7 @@ import client from "./client";
 
 export async function login({ username, password }) {
     
-    // 1. POST para obtener tokens
+    // 1. POST para obtener tokens - dj-rest-auth
     const tokenResponse = await client.post("/api/auth/login/", { username, password });
     
     const { access, refresh, user } = tokenResponse.data;
@@ -11,31 +11,22 @@ export async function login({ username, password }) {
     localStorage.setItem("access", access);
     localStorage.setItem("refresh", refresh);
 
-    // 2. GET para obtener datos del empleado con cargo
-    // Configurar el header de autorización temporalmente para esta llamada
-    client.defaults.headers.common['Authorization'] = `Bearer ${access}`;
-    
-    // Llama al endpoint de perfil
-    const employeeResponse = await client.get("/pos/me/");
-    
-    const employeeData = employeeResponse.data;
-
-    // 3. Guardar el objeto COMPLETO del empleado bajo la clave 'empleado'
-    localStorage.setItem("empleado", JSON.stringify(employeeData)); 
-    
-    // Guardar el objeto 'user' original (opcional)
+    // 2. Guardar datos del usuario
     localStorage.setItem("user", JSON.stringify(user));
 
-    // Limpiar el header por defecto después de usarlo
-    delete client.defaults.headers.common['Authorization'];
+    // 3. Configurar el header de autorización para futuras llamadas
+    client.defaults.headers.common['Authorization'] = `Bearer ${access}`;
 
-    return { ...tokenResponse.data, empleado: employeeData };
+    // Nota: Si necesitas datos adicionales del empleado, deberías crear un endpoint en el backend
+    // Por ahora, trabajamos solo con los datos del user que vienen del login
+    
+    return tokenResponse.data;
 }
 
 export function logout() {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
     localStorage.removeItem("user");
-    // Asegúrate de limpiar también la clave 'empleado'
-    localStorage.removeItem("empleado"); 
+    localStorage.removeItem("empleado");
+    delete client.defaults.headers.common['Authorization'];
 }

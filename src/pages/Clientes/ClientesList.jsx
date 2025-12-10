@@ -20,7 +20,7 @@ export default function ClientesList() {
   async function loadClientes() {
     setLoading(true);
     try {
-      const { data } = await client.get("/clientes/", {
+      const { data } = await client.get("/pos/clientes/", {
         params: { page, rut: filters.rut, nombre: filters.nombre },
       });
       setClientes(data.results || data); // si usas paginación DRF
