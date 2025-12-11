@@ -39,14 +39,27 @@ client.interceptors.request.use(
   }
 );
 
-// 3. (Opcional) Interceptor de Respuesta para manejar errores 401 globales
+// 3. Interceptor de Respuesta para manejar errores 401 globales
 client.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Si el token venció, podrías cerrar sesión automáticamente aquí
-      // localStorage.clear();
-      // window.location.href = "/login";
+      // Si el token venció o es inválido, limpiamos el localStorage
+      // EXCEPTO si estamos en la ruta de login (para no interferir con errores de credenciales)
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      
+      if (!isLoginRequest) {
+        // Token vencido/inválido - limpiar y redirigir
+        localStorage.removeItem("access");
+        localStorage.removeItem("refresh");
+        localStorage.removeItem("user");
+        localStorage.removeItem("empleado");
+        
+        // Solo redirigir si no estamos ya en login
+        if (window.location.pathname !== '/login') {
+          window.location.href = "/login";
+        }
+      }
     }
     return Promise.reject(error);
   }
