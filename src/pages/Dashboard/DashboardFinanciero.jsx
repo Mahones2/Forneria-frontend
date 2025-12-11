@@ -91,8 +91,8 @@ export default function DashboardFinanciero() {
   const loadDashboard = useCallback(async (params = {}) => {
     setLoading(true);
     try {
-      const response = await getDashboardFinanciero(params);
-      setDashboardData(response.data);
+      const data = await getDashboardFinanciero(params);
+      setDashboardData(data);
     } catch (err) {
       console.error("Error cargando dashboard:", err);
     } finally {

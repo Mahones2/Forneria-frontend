@@ -98,14 +98,13 @@ export default function DashboardInventario() {
       setMovimientos(data.movimientos || null);
       
       // Productos con más movimiento
-      setProductosMasMovimiento(Array.isArray(data.productos_mas_movimiento) ? data.productos_mas_movimiento : []);
-      
+      setProductosMasMovimiento(Array.isArray(data.productos_movimiento) ? data.productos_movimiento : []);
+
       // Stock por categoría para el gráfico
       setStockCategoria(data.stock_categoria || null);
-      
-      // Valorización (tabla)
-      setValorizacion(data.valorizacion_categoria || null);
 
+      // Valorización (tabla)
+      setValorizacion(data.valorizacion || null);
       // Rotación (KPIs de rotación)
       setRotacion(data.rotacion || null);
       

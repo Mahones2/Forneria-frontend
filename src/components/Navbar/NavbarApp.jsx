@@ -4,6 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import client from '../../api/client';
 import logo from "../../assets/logo.png"; // Ajusta la ruta si es necesario
 
+// URL del backend para enlaces externos
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
 // ====================================================================
 // COMPONENTE: PedidoCounter (Maneja la lógica de API y carga)
 // ====================================================================
@@ -98,15 +101,20 @@ function NavbarApp() {
         </li>
     );
 
-    // Componente para los títulos de sección del menú
-    const MenuTitle = ({ title }) => (
-        <h6 className="text-info mt-3 mb-1 px-3 fw-bold" style={{ fontSize: '0.8rem' }}>
-            {title}
-        </h6>
+    // Componente para enlaces externos (como el admin)
+    const ExternalNavLink = ({ href, label }) => (
+        <li className="nav-item w-100">
+            <a 
+                className="nav-link text-white ps-4 d-flex justify-content-between align-items-center" 
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                {label}
+                <i className="bi bi-box-arrow-up-right ms-2" style={{ fontSize: '0.8rem' }}></i>
+            </a>
+        </li>
     );
-
-    // Menú para Administrador
-    const menuAdministrador = (
         <div className="w-100">
             <MenuTitle title="Dashboards" />
             <ul className="nav flex-column align-items-start px-0">
@@ -127,7 +135,7 @@ function NavbarApp() {
                 <NavLink to="/inventario" label="Inventario (Stock)" />
                 <NavLink to="/clientes" label="Clientes" />
                 <NavLink to="/reportes" label="Reportes" />
-                <NavLink to="/configuracion" label="Configuración" />
+                <ExternalNavLink href={`${API_URL}/admin/`} label="Configuración" />
             </ul>
         </div>
     );
