@@ -1,8 +1,14 @@
 import axios from "axios";
 
 // 1. Crear la instancia
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
+// Debug: Verificar que la variable de entorno se cargue correctamente
+console.log('🔧 API URL configurada:', API_URL);
+console.log('🔧 VITE_API_URL env:', import.meta.env.VITE_API_URL);
+
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://127.0.0.1:8000",
+  baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },
