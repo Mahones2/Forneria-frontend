@@ -481,7 +481,7 @@ export default function DashboardInventario() {
                           <tr><th>Producto</th><th>Lote</th><th>Fecha Caducidad</th><th className="text-end">Días Vencido</th><th className="text-end">Stock</th><th className="text-end">Valor Perdido</th></tr>
                         </thead>
                         <tbody>
-                          {productosVencidos.productos.map((p, idx) => (
+                          {productosVencidos.productos && Array.isArray(productosVencidos.productos) && productosVencidos.productos.map((p, idx) => (
                             <tr key={idx}>
                               <td><strong>{p.producto_nombre}</strong></td>
                               <td>{p.numero_lote}</td>
