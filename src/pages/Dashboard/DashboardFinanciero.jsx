@@ -225,6 +225,46 @@ export default function DashboardFinanciero() {
         }
     : null;
 
+  // Gráfico de Ventas por Canal
+  const canalChartData = ventasPorCanal && ventasPorCanal.length > 0 ? {
+    labels: ventasPorCanal.map(c => c.canal || 'Sin canal'),
+    datasets: [{
+      data: ventasPorCanal.map(c => c.total || 0),
+      backgroundColor: [colors.primary, colors.success, colors.warning, colors.danger, colors.info],
+    }]
+  } : null;
+
+  // Gráfico de Ventas por Categoría
+  const categoriaChartData = ventasPorCategoria && ventasPorCategoria.categorias ? {
+    labels: ventasPorCategoria.categorias.map(c => c.categoria),
+    datasets: [{
+      data: ventasPorCategoria.categorias.map(c => c.total),
+      backgroundColor: [colors.primary, colors.success, colors.warning, colors.danger, colors.info, colors.purple, colors.orange],
+    }]
+  } : null;
+
+  // Gráfico de Ventas por Hora
+  const horaChartData = ventasPorHora && ventasPorHora.length > 0 ? {
+    labels: ventasPorHora.map(h => `${h.hora}:00`),
+    datasets: [{
+      label: 'Ventas por Hora',
+      data: ventasPorHora.map(h => h.total),
+      backgroundColor: colors.primary,
+    }]
+  } : null;
+
+  // Gráfico de Clientes Nuevos vs Recurrentes
+  const clientesNuevosChartData = clientesNuevosRecurrentes ? {
+    labels: ['Clientes Nuevos', 'Clientes Recurrentes'],
+    datasets: [{
+      data: [
+        clientesNuevosRecurrentes.clientes_nuevos || 0,
+        clientesNuevosRecurrentes.clientes_recurrentes || 0
+      ],
+      backgroundColor: [colors.success, colors.primary],
+    }]
+  } : null;
+
   // ============ RENDERIZADO ============
   if (loading) {
     return <Loader />;
