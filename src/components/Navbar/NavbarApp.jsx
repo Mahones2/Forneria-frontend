@@ -115,6 +115,16 @@ function NavbarApp() {
             </a>
         </li>
     );
+
+    // Componente para los títulos de sección del menú
+    const MenuTitle = ({ title }) => (
+        <h6 className="text-info mt-3 mb-1 px-3 fw-bold" style={{ fontSize: '0.8rem' }}>
+            {title}
+        </h6>
+    );
+
+    // Menú para Administrador
+    const menuAdministrador = (
         <div className="w-100">
             <MenuTitle title="Dashboards" />
             <ul className="nav flex-column align-items-start px-0">
