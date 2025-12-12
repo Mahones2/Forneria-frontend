@@ -126,7 +126,6 @@ function NavbarApp() {
             <ul className="nav flex-column align-items-start px-0">
                 <NavLink to="/inventario" label="Inventario (Stock)" />
                 <NavLink to="/clientes" label="Clientes" />
-                <NavLink to="/reportes" label="Reportes" />
                 <NavLink to="/configuracion" label="Configuración" />
             </ul>
         </div>

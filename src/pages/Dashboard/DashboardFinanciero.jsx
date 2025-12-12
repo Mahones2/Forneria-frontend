@@ -92,7 +92,7 @@ export default function DashboardFinanciero() {
     setLoading(true);
     try {
       const response = await getDashboardFinanciero(params);
-      setDashboardData(response.data);
+      setDashboardData(response);
     } catch (err) {
       console.error("Error cargando dashboard:", err);
     } finally {
@@ -100,60 +100,52 @@ export default function DashboardFinanciero() {
     }
   }, []);
 
-  const momChartData = {
-    // Labels del eje X (ej: Enero, Febrero, Marzo)
+  const momChartData = (comparativaMom && Array.isArray(comparativaMom) && comparativaMom.length > 0) ? {
     labels: comparativaMom.map(item => item.mes_nombre),
     datasets: [
         {
             label: 'Ventas Mensuales',
-            // Datos del eje Y (ventas)
             data: comparativaMom.map(item => item.ventas_totales),
             backgroundColor: colors.primary,
         }
     ]
-};
+} : null;
 
-  const diaSemanaChartData = {
-      // Labels del eje X (ej: Lunes, Martes)
-      labels: ventasDiaSemana?.map(item => item.dia) || [], 
+  const diaSemanaChartData = (ventasDiaSemana && Array.isArray(ventasDiaSemana) && ventasDiaSemana.length > 0) ? {
+      labels: ventasDiaSemana.map(item => item.dia),
       datasets: [
           {
               label: 'Ventas por Día de la Semana',
-              // Datos del eje Y (ventas)
-              data: ventasDiaSemana?.map(item => item.ventas) || [],
+              data: ventasDiaSemana.map(item => item.ventas),
               backgroundColor: [
                   colors.primary, colors.success, colors.danger, 
                   colors.warning, colors.info, colors.purple, colors.orange
               ],
-              // Si es una gráfica de barras o dona
           }
       ]
-  };
+  } : null;
 
-  const netasIvaChartData = {
-      // Labels del eje X (ej: las fechas)
-      labels: ventasDiarias.map(item => item.fecha), // Usamos ventasDiarias
+  const netasIvaChartData = (ventasDiarias && Array.isArray(ventasDiarias) && ventasDiarias.length > 0) ? {
+      labels: ventasDiarias.map(item => item.fecha),
       datasets: [
           {
               label: 'Ventas Netas',
-              // Asumiendo que la data tiene la clave 'netas'
-              data: ventasDiarias.map(item => item.netas), 
+              data: ventasDiarias.map(item => item.netas),
               borderColor: colors.primary,
-              backgroundColor: colors.primary + '30', 
+              backgroundColor: colors.primary + '30',
               fill: true,
-              tension: 0.4, // Suavidad de la línea
+              tension: 0.4,
           },
           {
               label: 'IVA',
-              // Asumiendo que la data tiene la clave 'iva'
-              data: ventasDiarias.map(item => item.iva), 
+              data: ventasDiarias.map(item => item.iva),
               borderColor: colors.success,
               backgroundColor: colors.success + '30',
               fill: true,
               tension: 0.4,
           }
       ]
-  };
+  } : null;
 
   useEffect(() => {
     loadDashboard();
@@ -177,6 +169,70 @@ export default function DashboardFinanciero() {
     `$${Math.round(value).toLocaleString("es-CL")}`;
 
   // ============ CONFIGURACIÓN DE GRÁFICOS ============
+
+  // Gráficos de Canal y Categoría
+  const canalChartData = ventasPorCanal && ventasPorCanal.length > 0 ? {
+    labels: ventasPorCanal.map(item => item.canal || 'N/A'),
+    datasets: [{
+      data: ventasPorCanal.map(item => item.total || 0),
+      backgroundColor: [colors.primary, colors.success, colors.warning, colors.danger],
+    }]
+  } : null;
+
+  const categoriaChartData = ventasPorCategoria && ventasPorCategoria.length > 0 ? {
+    labels: ventasPorCategoria.map(item => item.categoria || 'N/A'),
+    datasets: [{
+      data: ventasPorCategoria.map(item => item.total || 0),
+      backgroundColor: [colors.info, colors.purple, colors.orange, colors.teal, colors.pink],
+    }]
+  } : null;
+
+  const clientesNuevosChartData = clientesNuevosRecurrentes ? {
+    labels: ['Nuevos', 'Recurrentes'],
+    datasets: [{
+      data: [clientesNuevosRecurrentes.nuevos?.count || 0, clientesNuevosRecurrentes.recurrentes?.count || 0],
+      backgroundColor: [colors.success, colors.info],
+    }]
+  } : null;
+
+  const horaChartData = ventasPorHora && ventasPorHora.length > 0 ? {
+    labels: ventasPorHora.map(item => `${item.hora}:00` || 'N/A'),
+    datasets: [{
+      label: 'Ventas por Hora',
+      data: ventasPorHora.map(item => item.total || 0),
+      backgroundColor: colors.primary,
+    }]
+  } : null;
+
+  const flujoCajaChartData = flujoCaja && flujoCaja.length > 0 ? {
+    labels: flujoCaja.map(item => item.fecha || 'N/A'),
+    datasets: [
+      {
+        label: 'Ingresos',
+        data: flujoCaja.map(item => item.ingresos || 0),
+        borderColor: colors.success,
+        backgroundColor: colors.success + '30',
+        fill: true,
+        tension: 0.4,
+      },
+      {
+        label: 'Gastos',
+        data: flujoCaja.map(item => item.gastos || 0),
+        borderColor: colors.danger,
+        backgroundColor: colors.danger + '30',
+        fill: true,
+        tension: 0.4,
+      }
+    ]
+  } : null;
+
+  const gastosChartData = gastosOperativos && gastosOperativos.desglose && gastosOperativos.desglose.length > 0 ? {
+    labels: gastosOperativos.desglose.map(item => item.tipo || 'N/A'),
+    datasets: [{
+      data: gastosOperativos.desglose.map(item => item.total || 0),
+      backgroundColor: [colors.danger, colors.warning, colors.orange, colors.purple, colors.pink],
+    }]
+  } : null;
 
   // Ejemplo: Ventas Diarias + Proyección
   const ventasDiariasChartData = ventasDiarias
@@ -297,8 +353,8 @@ export default function DashboardFinanciero() {
                     <div className="card border-primary">
                       <div className="card-body">
                         <h6 className="text-muted mb-2">Ventas Hoy</h6>
-                        <h3 className="mb-1">{formatCurrency(kpisHoy.hoy?.total || 0)}</h3>
-                        <small className="text-muted">{kpisHoy.hoy?.cantidad || 0} transacciones</small>
+                        <h3 className="mb-1">{formatCurrency(kpisHoy?.total || kpisHoy?.hoy?.total || 0)}</h3>
+                        <small className="text-muted">{kpisHoy?.cantidad || kpisHoy?.hoy?.cantidad || 0} transacciones</small>
                       </div>
                     </div>
                   </div>
@@ -306,8 +362,8 @@ export default function DashboardFinanciero() {
                     <div className="card border-success">
                       <div className="card-body">
                         <h6 className="text-muted mb-2">Ventas Periodo</h6>
-                        <h3 className="mb-1">{formatCurrency(resumen?.total_ventas || 0)}</h3>
-                        <small className="text-muted">{resumen?.cantidad_transacciones || 0} ventas</small>
+                        <h3 className="mb-1">{formatCurrency(resumen?.total_ventas || resumen?.total || 0)}</h3>
+                        <small className="text-muted">{resumen?.cantidad_transacciones || resumen?.cantidad || 0} ventas</small>
                       </div>
                     </div>
                   </div>
