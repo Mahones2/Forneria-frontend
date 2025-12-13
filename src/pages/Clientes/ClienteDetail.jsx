@@ -4,6 +4,7 @@ import client from "../../api/client";
 import Loader from "../../components/UI/Loader";
 import Table from "../../components/UI/Table";
 import Pagination from "../../components/UI/Pagination";
+import Swal from 'sweetalert2'
 
 export default function ClienteDetail() {
   const { rut } = useParams();
@@ -41,7 +42,14 @@ export default function ClienteDetail() {
         const config = { headers: { Authorization: `Bearer ${authToken}` } };
         const { data } = await client.get(`/pos/api/ventas/${ventaId}/`, config);
         setSelectedVenta(data);
-    } catch (error) { alert("Error cargando boleta"); }
+    } catch (error) { 
+      Swal.fire({
+        icon: 'error',
+        title: 'Error cargando boleta',
+        text: 'No se pudo obtener la información de la venta.',
+        confirmButtonColor: '#d33'
+      });
+     }
   };
 
   const columns = [

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import client from "../../api/client";
 import LoteModal from "./LoteModal";
+import Swal from 'sweetalert2'
 
 export default function LoteManager({ producto, authToken, onUpdateStock }) {
     const [lotes, setLotes] = useState([]);
@@ -41,7 +42,13 @@ export default function LoteManager({ producto, authToken, onUpdateStock }) {
             await fetchLotes();
             onUpdateStock(); 
         } catch (err) {
-            alert("Error al eliminar lote.");
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al eliminar lote',
+                confirmButtonColor: '#d33'
+            });
+
         }
     };
 

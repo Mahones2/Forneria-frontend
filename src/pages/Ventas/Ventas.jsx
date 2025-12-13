@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom"; 
 import client from "../../api/client";
 import Loader from "../../components/UI/Loader";
+import Swal from 'sweetalert2'
 
 // Helper para formato de moneda (se mantiene)
 const formatCurrency = (value) => {
@@ -79,7 +79,17 @@ export default function Ventas() {
     }, []);
 
     if (loading) return <Loader />;
-    if (error) return <div className="alert alert-danger container mt-4">Error: {error}</div>;
+    if (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error,
+            confirmButtonColor: '#d33'
+        });
+
+        return null; // evita que el componente siga renderizando
+    }
+
 
     return (
         <div className="container mt-4">
