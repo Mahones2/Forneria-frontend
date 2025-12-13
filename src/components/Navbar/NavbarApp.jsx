@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import client from '../../api/client';
 import logo from "../../assets/logo.png"; // Ajusta la ruta si es necesario
 
+// URL del backend para enlaces externos
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 // ====================================================================
 // COMPONENTE: PedidoCounter (Maneja la lógica de API y carga)
 // ====================================================================
