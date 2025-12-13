@@ -21,6 +21,7 @@ import LotesPage from "../pages/Lotes/LotesPage";
 import Ventas from "../pages/Ventas/Ventas";
 import OrdenesActivas from "../pages/Pedidos/OrdenesActivas"; 
 import DetalleVenta from "../pages/Pedidos/DetalleVenta"; 
+import Configuracion from "../pages/Configuracion/Configuracion";
 
 // 5. Dashboards
 import DashboardFinanciero from "../pages/Dashboard/DashboardFinanciero";
@@ -84,6 +85,8 @@ export default function AppRouter() {
             {/* Gestión de Clientes */}
             <Route path="/clientes" element={<PrivateRoute><PrivateLayout><ClientesList /></PrivateLayout></PrivateRoute>} />
             <Route path="/clientes/:rut" element={<PrivateRoute><PrivateLayout><ClienteDetail /></PrivateLayout></PrivateRoute>} />
+            {/* Configuración */}
+            <Route path="/configuracion" element={<PrivateRoute><PrivateLayout><Configuracion /></PrivateLayout></PrivateRoute>} />
             
             {/* 404 - Página no encontrada */}
             <Route path="*" element={<h1 className="container p-5 text-center">404 | Página No Encontrada</h1>} />
