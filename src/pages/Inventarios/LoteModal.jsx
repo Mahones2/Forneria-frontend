@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import client from "../../api/client";
+import Swal from 'sweetalert2'
 
 export default function LoteModal({ show, onClose, loteToEdit, productoId, onSuccess }) {
     const [authToken] = useState(() => localStorage.getItem("access"));
@@ -61,7 +62,17 @@ export default function LoteModal({ show, onClose, loteToEdit, productoId, onSuc
             onSuccess(); // Notificar éxito
         } catch (err) {
             console.error("Error guardando lote:", err);
-            alert("Error al guardar: " + JSON.stringify(err.response?.data || "Error desconocido"));
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: 'Error al guardar',
+                text: JSON.stringify(err.response?.data || "Error desconocido"),
+                showConfirmButton: false,
+                timer: 3000
+            });
+
+
         } finally {
             setIsProcessing(false);
         }

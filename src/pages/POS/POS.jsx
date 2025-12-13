@@ -3,6 +3,7 @@ import client from "../../api/client";
 import './pos.css'; 
 import { Decimal } from "decimal.js"; 
 import ClientCreationModal from './ClientCreationModal';
+import Swal from 'sweetalert2'
 
 // Constantes
 const METODOS_PAGO = [
@@ -26,7 +27,11 @@ function POS() {
     // --- Estado de datos ---
     const [productos, setProductos] = useState([]);
     const [categorias, setCategorias] = useState([]);
-    
+    // --- Estado para información nutricional ---
+    const [nutricional, setNutricional] = useState(null);
+    const [showNutricionalModal, setShowNutricionalModal] = useState(false);
+    const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+
     // --- Estado de la Venta actual ---
     const [cart, setCart] = useState([]); 
     
@@ -119,6 +124,48 @@ function POS() {
         }
     }, [authToken]);
     
+
+    const handleOpenNutricional = async (productoId) => {
+        const token = authToken || localStorage.getItem("access");
+        if (!token) return;
+
+        try {
+            const config = { headers: { Authorization: `Bearer ${token}` } };
+
+            // Tu API devuelve una lista, así que tomamos el primer elemento
+            const res = await client.get(`/pos/api/nutricional/?producto=${productoId}`, config);
+
+            setNutricional(res.data.length > 0 ? res.data[0] : null);
+            setProductoSeleccionado(productoId);
+            setShowNutricionalModal(true);
+
+        } catch (err) {
+            console.error("Error cargando información nutricional:", err);
+            setNutricional(null);
+            setShowNutricionalModal(true);
+        }
+    };
+
+    const getSellosNutricionales = (nut) => {
+        if (!nut) return [];
+
+        const sellos = [];
+
+        const calorias = parseFloat(nut.calorias) || 0;
+        const grasas = parseFloat(nut.grasas) || 0;
+        const azucares = parseFloat(nut.azucares) || 0;
+        const sodio = parseFloat(nut.sodio) || 0;
+
+        if (calorias >= 275) sellos.push("ALTO EN CALORÍAS");
+        if (grasas >= 3) sellos.push("ALTO EN GRASAS SATURADAS");
+        if (azucares >= 10) sellos.push("ALTO EN AZÚCARES");
+        if (sodio >= 400) sellos.push("ALTO EN SODIO");
+
+        return sellos;
+    };
+
+
+
     // --- Lógica del Carrito ---
     const getProductStock = (id) => {
         const producto = productos.find(p => p.id === id);
@@ -128,7 +175,13 @@ function POS() {
     const handleAddToCart = (producto) => {
         const stockActual = getProductStock(producto.id);
         if (stockActual <= 0) {
-            alert("Sin stock");
+            Swal.fire({
+                icon: 'warning',
+                title: 'Sin stock',
+                footer: 'Intenta más tarde',
+                timer: 2000,
+                showConfirmButton: false
+                })
             return;
         }
 
@@ -196,7 +249,6 @@ function POS() {
         }, new Decimal(0)).round();
     }, [pagosRealizados]);
 
-
     // ==========================================
     // FINALIZAR VENTA (MODIFICADO para usar cliente_id)
     // ==========================================
@@ -204,7 +256,17 @@ function POS() {
         if (cart.length === 0) return;
 
         if (saldoPendiente.greaterThan(0)) {
-            alert(`Aún falta por pagar: ${formatCurrency(saldoPendiente)}. Por favor, añada un pago.`);
+            Swal.fire({
+                title: 'Pago pendiente',
+                text: `Aún falta por pagar: ${formatCurrency(saldoPendiente)}. Por favor, añada un pago.`,
+                icon: 'warning',
+                confirmButtonText: 'Entendido',
+                background: '#1e1e1e',
+                color: '#fff',
+                confirmButtonColor: '#f8c102',
+                width: '360px'
+                })
+
             return;
         }
 
@@ -242,7 +304,17 @@ function POS() {
             if (vueltoTotalFinal.greaterThan(0)) {
                 msgExito += `\n\nVuelto a entregar: ${formatCurrency(vueltoTotalFinal)}`;
             }
-            alert(msgExito);
+            Swal.fire({
+                title: 'Éxito',
+                text: msgExito,
+                icon: 'success',
+                confirmButtonText: 'OK',
+                background: '#1e1e1e',
+                color: '#fff',
+                confirmButtonColor: '#4caf50',
+                width: '360px'
+                })
+
             
             // Resetear todos los estados, incluyendo cliente
             setCart([]); 
@@ -265,6 +337,8 @@ function POS() {
         }
     }
 
+
+
     const handleCreateClient = async (clientData) => {
     // clientData debe tener al menos: {rut, nombre, email, telefono, direccion}
     const token = authToken || localStorage.getItem("access");
@@ -276,7 +350,19 @@ function POS() {
         const res = await client.post("/pos/api/clientes/", clientData, config); 
         
         // Cliente creado exitosamente (res.data contiene el nuevo cliente)
-        alert(`Cliente ${res.data.nombre} creado y seleccionado.`);
+
+        Swal.fire({
+            title: 'Cliente creado',
+            text: `Cliente ${res.data.nombre} fue creado y seleccionado.`,
+            icon: 'succes',
+            confirmButtonText: 'Entendido',
+            background: '#1e1e1e',
+            color: '#fff',
+            confirmButtonColor: '#4caf50',
+            width: '360px'
+            })
+
+
         setClienteSeleccionado(res.data); // Automáticamente seleccionar al cliente recién creado
         setClienteError(null); // Limpiar error de búsqueda
         setRutCliente(res.data.rut); // Asegurar que el input de RUT refleje el nuevo cliente
@@ -285,7 +371,17 @@ function POS() {
         
     } catch (err) {
         console.error("Error al crear cliente:", err.response?.data);
-        alert(`Error al crear cliente: ${JSON.stringify(err.response?.data)}`);
+        Swal.fire({
+            title: 'Fallo al crear al cliente',
+            text: `Error al crear cliente: ${JSON.stringify(err.response?.data)}`,
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            background: '#1e1e1e',
+            color: '#fff',
+            confirmButtonColor: '#f8c102',
+            width: '360px'
+            })
+
         return false; // Falla
     }
 };
@@ -310,13 +406,33 @@ function POS() {
         if (metodoPagoActual === 'EFE') {
             montoRecibido = montoActualDec;
             if (montoActualDec.lessThan(saldoPendiente)) {
-                alert(`En efectivo, el monto entregado debe ser igual o superior al saldo pendiente. Faltan ${formatCurrency(saldoPendiente.minus(montoActualDec))}`);
+                Swal.fire({
+                    title: 'Saldo Pendiente',
+                    text: `En efectivo, el monto entregado debe ser igual o superior al saldo pendiente. Faltan ${formatCurrency(saldoPendiente.minus(montoActualDec))}`,
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido',
+                    background: '#1e1e1e',
+                    color: '#fff',
+                    confirmButtonColor: '#f8c102',
+                    width: '360px'
+                    })
+
                 return;
             }
         } else {
             montoRecibido = montoAplicado;
             if (montoActualDec.greaterThan(saldoPendiente)) {
-                alert(`Para pagos con ${metodoPagoActual}, ingrese sólo el monto pendiente de ${formatCurrency(saldoPendiente)}.`);
+                 Swal.fire({
+                    title: 'Saldo Pendiente',
+                    text: `Para pagos con ${metodoPagoActual}, ingrese sólo el monto pendiente de ${formatCurrency(saldoPendiente)}.`,
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido',
+                    background: '#1e1e1e',
+                    color: '#fff',
+                    confirmButtonColor: '#f8c102',
+                    width: '360px'
+                    })
+                
                 return;
             }
         }
@@ -344,7 +460,21 @@ function POS() {
         });
     }, [productos, buscar, categoriaSeleccionada]);
 
-    if (!authToken) return <div className="alert alert-danger mt-5">Falta Token de Acceso.</div>;
+    if (!authToken) {
+        Swal.fire({
+            title: 'Acceso denegado',
+            text: 'Falta Token de Acceso.',
+            icon: 'error',
+            confirmButtonText: 'Entendido',
+            background: '#1e1e1e',
+            color: '#fff',
+            confirmButtonColor: '#d33',
+            width: '360px'
+        });
+
+        return null; // o return <></>
+        }
+
 
     // Mostrar loader mientras se cargan los datos
     if (isLoading) {
@@ -414,33 +544,88 @@ function POS() {
                     {error && <div className="alert alert-danger shadow-sm">{error}</div>}
 
                     <div className="row g-3">
-                        {productosFiltrados.map((prod) => (
-                            <div key={prod.id} className="col-6 col-md-4 col-lg-3">
-                                <button 
-                                    className={`card h-100 w-100 text-start shadow-sm border-0 btn btn-light position-relative ${prod.stock_fisico <= 0 ? 'opacity-50' : ''}`}
-                                    onClick={() => handleAddToCart(prod)}
-                                    disabled={prod.stock_fisico <= 0 || isProcessing}
-                                >
-                                    {/* ... (Tarjeta de producto) ... */}
-                                    <div className="card-body p-3">
-                                        <div className="badge bg-secondary mb-2 position-absolute top-0 end-0 m-2">
-                                            {prod.stock_fisico} u.
+                        {productosFiltrados.map((prod) => {
+
+                            console.log("IMAGEN:", prod.imagen_referencial);
+
+                            return (
+                                <div key={prod.id} className="col-6 col-md-4 col-lg-3">
+
+                                    <div 
+                                        className={`card h-100 w-100 shadow-sm border-0 position-relative 
+                                            ${prod.stock_fisico <= 0 ? 'opacity-50' : ''}`}
+                                        style={{ transition: "transform 0.2s ease, box-shadow 0.2s ease" }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.transform = "scale(1.03)";
+                                            e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.2)";
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.transform = "scale(1)";
+                                            e.currentTarget.style.boxShadow = "0 2px 6px rgba(0,0,0,0.1)";
+                                        }}
+                                    >
+
+                                        {/* Imagen */}
+                                        <div className="p-2 text-center">
+                                            <img
+                                                src={prod.imagen_referencial}
+                                                alt={prod.nombre}
+                                                className="img-fluid rounded"
+                                                style={{ maxHeight: "100px", objectFit: "contain" }}
+                                            />
                                         </div>
-                                        <h6 className="card-title text-truncate fw-bold mb-1" title={prod.nombre}>
-                                            {prod.nombre}
-                                        </h6>
-                                        <p className="small text-muted mb-2 text-truncate">
-                                            Marca: {prod.marca || 'S/M'}
-                                        </p>
-                                        <p className="small text-muted mb-2">SKU: {prod.codigo_barra}</p>
-                                        <h5 className="text-primary fw-bold mb-0">
-                                            {formatCurrency(prod.precio_venta)}
-                                        </h5>
+
+                                        <div className="card-body p-3">
+
+                                            <div className="badge bg-secondary position-absolute top-0 end-0 m-2">
+                                                {prod.stock_fisico} u.
+                                            </div>
+
+                                            <h6 className="card-title text-truncate fw-bold mb-1" title={prod.nombre}>
+                                                {prod.nombre}
+                                            </h6>
+
+                                            <p className="small text-muted mb-1 text-truncate">
+                                                {prod.descripcion || "Sin descripción"}
+                                            </p>
+
+                                            <p className="small text-muted mb-1 text-truncate">
+                                                Marca: {prod.marca || "S/M"}
+                                            </p>
+
+                                            <p className="small text-muted mb-2">
+                                                SKU: {prod.codigo_barra}
+                                            </p>
+
+                                            <h5 className="text-primary fw-bold mb-3">
+                                                {formatCurrency(prod.precio_venta)}
+                                            </h5>
+
+                                            <button
+                                                className="btn btn-primary w-100 mb-2"
+                                                onClick={() => handleAddToCart(prod)}
+                                                disabled={prod.stock_fisico <= 0 || isProcessing}
+                                            >
+                                                Agregar
+                                            </button>
+
+                                            <button
+                                                className="btn btn-outline-secondary w-100"
+                                                onClick={() => handleOpenNutricional(prod.id)}
+                                            >
+                                                Información nutricional
+                                            </button>
+
+                                        </div>
                                     </div>
-                                </button>
-                            </div>
-                        ))}
+
+                                </div>
+                            );
+                        })}
                     </div>
+
+
+
                 </div>
 
                 {/* --- COLUMNA DERECHA: CAJA / PAGO (MODIFICADO) --- */}
@@ -637,7 +822,85 @@ function POS() {
                     </div>
                 </div>
             </div>
+
+            {showNutricionalModal && (
+                <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
+                    <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+
+                            <div className="modal-header">
+                                <h5 className="modal-title">Información Nutricional</h5>
+                                <button
+                                    className="btn-close"
+                                    onClick={() => setShowNutricionalModal(false)}
+                                ></button>
+                            </div>
+
+                            <div className="modal-body">
+
+                                {/* Sellos chilenos */}
+                                {nutricional && (
+                                    <div className="d-flex flex-wrap gap-2 mb-3">
+                                        {getSellosNutricionales(nutricional).map((sello, index) => (
+                                            <div
+                                                key={index}
+                                                style={{
+                                                    width: "90px",
+                                                    height: "90px",
+                                                    borderRadius: "50%",
+                                                    background: "black",
+                                                    color: "white",
+                                                    display: "flex",
+                                                    justifyContent: "center",
+                                                    alignItems: "center",
+                                                    textAlign: "center",
+                                                    fontSize: "12px",
+                                                    fontWeight: "bold",
+                                                    padding: "10px"
+                                                }}
+                                            >
+                                                {sello}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Tabla nutricional */}
+                                {nutricional ? (
+                                    <table className="table table-bordered">
+                                        <tbody>
+                                            <tr><th>Calorías</th><td>{nutricional.calorias}</td></tr>
+                                            <tr><th>Proteínas</th><td>{nutricional.proteinas}</td></tr>
+                                            <tr><th>Grasas</th><td>{nutricional.grasas}</td></tr>
+                                            <tr><th>Hidratos de Carbono</th><td>{nutricional.carbohidratos}</td></tr>
+                                            <tr><th>Azúcares</th><td>{nutricional.azucares}</td></tr>
+                                            <tr><th>Sodio</th><td>{nutricional.sodio} mg</td></tr>
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <p className="text-muted">No hay información nutricional disponible.</p>
+                                )}
+                            </div>
+
+                            <div className="modal-footer">
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowNutricionalModal(false)}
+                                >
+                                    Cerrar
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+
         </div>
+
+        
     );
 }
 

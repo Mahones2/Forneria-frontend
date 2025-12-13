@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import client from "../../api/client"; 
 import LoteManager from "./LoteManager";
 import ProductoFormModal from "./ProductoFormModal";
+import Swal from 'sweetalert2'
 
 export default function InventarioPage() {
     const [authToken] = useState(() => localStorage.getItem("access") || null);
@@ -57,7 +58,13 @@ export default function InventarioPage() {
             
             fetchData(); // Recargar lista
         } catch (error) {
-            alert("Error al eliminar producto");
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Error al eliminar producto',
+                confirmButtonColor: '#d33'
+            });
+
         }
     };
 

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import client from "../../api/client";
 import Loader from "../../components/UI/Loader";
-
+import Swal from 'sweetalert2'
 // --- Helpers para formato ---
 const formatCurrency = (value) => {
     const numericValue = parseFloat(value);
@@ -88,7 +88,15 @@ export default function DetalleVenta() {
             
             // 4. Actualizar el estado localmente para reflejar el cambio
             setVenta(prev => ({ ...prev, estado: nuevoEstado }));
-            alert(`Estado de Venta #${id} actualizado a ${ESTADO_DISPLAY[nuevoEstado].text}`);
+            Swal.fire({
+                icon: 'success',
+                title: `Venta #${id}`,
+                text: `Estado actualizado a ${ESTADO_DISPLAY[nuevoEstado].text}`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+
             
         } catch (err) {
             console.error("Error al actualizar estado:", err.response?.data || err);

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import client from "../../api/client";
+import Swal from 'sweetalert2'
 
 export default function ProductoFormModal({ show, onClose, productToEdit, categorias, onSuccess }) {
     const [authToken] = useState(() => localStorage.getItem("access"));
@@ -58,7 +59,15 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
             onSuccess();
         } catch (err) {
             console.error(err);
-            alert("Error al guardar producto");
+            Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: 'Error al guardar producto',
+            showConfirmButton: false,
+            timer: 2000
+        });
+
         } finally {
             setIsProcessing(false);
         }
