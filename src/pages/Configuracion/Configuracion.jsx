@@ -133,7 +133,7 @@ export default function Configuracion() {
 
   return (
     <div className="container">
-      <h2 className="mt-2 mb-4">Configuración</h2>
+      <h2 className="mt-2 mb-4">Empleados</h2>
 
       {error && (
         <div className="alert alert-danger d-flex justify-content-between align-items-center">

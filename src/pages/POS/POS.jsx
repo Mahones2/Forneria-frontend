@@ -76,10 +76,7 @@ function POS() {
             
         } catch (err) {
             console.error("Error cargando datos:", err);
-            const errorMsg = err.response?.status === 500 
-                ? "Error del servidor (500). El servidor no está respondiendo correctamente. Por favor, contacte al administrador."
-                : err.response?.data?.detail || "Error de conexión al cargar productos.";
-            setError(errorMsg);
+            setError("Error de conexión al cargar productos.");
         } finally {
             setIsLoading(false);
         }
@@ -475,41 +472,6 @@ function POS() {
         return null; // o return <></>
         }
 
-
-    // Mostrar loader mientras se cargan los datos
-    if (isLoading) {
-        return (
-            <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-                <div className="text-center">
-                    <div className="spinner-border text-primary mb-3" role="status">
-                        <span className="visually-hidden">Cargando...</span>
-                    </div>
-                    <p className="text-muted fs-5">Cargando productos y categorías...</p>
-                </div>
-            </div>
-        );
-    }
-
-    // Mostrar mensaje de error si ocurre
-    if (error) {
-        return (
-            <div className="container mt-5">
-                <div className="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
-                    <div>
-                        <h4 className="alert-heading">Error al cargar</h4>
-                        <p>{error}</p>
-                        <small>Por favor, intente reintentar o contacte al administrador si el problema persiste.</small>
-                    </div>
-                    <button 
-                        className="btn btn-danger"
-                        onClick={() => fetchData()}
-                    >
-                        Reintentar
-                    </button>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="container-fluid bg-light ">
