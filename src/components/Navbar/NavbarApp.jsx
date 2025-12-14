@@ -102,7 +102,7 @@ function NavbarApp() {
 
     // Componente para los títulos de sección del menú
     const MenuTitle = ({ title }) => (
-        <h6 className="text-info mt-3 mb-1 px-3 fw-bold" style={{ fontSize: '0.8rem' }}>
+        <h6 className="mt-3 mb-1 px-3 fw-bold" style={{ fontSize: '0.8rem', color: 'var(--accent-color)' }}>
             {title}
         </h6>
     );
@@ -150,9 +150,14 @@ function NavbarApp() {
     );
 
     return (
-        <nav className="bg-dark text-white d-flex flex-column min-vh-100" style={{ width: '250px', flexShrink: 0 }}>
+        <nav className="d-flex flex-column min-vh-100" style={{
+            width: '250px',
+            flexShrink: 0,
+            backgroundColor: 'var(--primary-color)',
+            color: 'var(--text-white)'
+        }}>
             {/* Bloque superior: logo + info de usuario */}
-            <div className="text-center py-4 border-bottom border-secondary">
+            <div className="text-center py-4 border-bottom" style={{ borderColor: 'var(--secondary-color) !important' }}>
                 <img src={logo} alt="Logo" className="img-fluid" style={{ maxHeight: "40px" }} />
                 
                  {empleado && (
@@ -194,17 +199,17 @@ function NavbarApp() {
             <div className="mt-auto">
                 {/* Botón de Logout */}
                 {empleado && (
-                    <div className="px-3 py-3 border-top border-secondary">
+                    <div className="px-3 py-3 border-top" style={{ borderColor: 'var(--secondary-color)' }}>
                         <button onClick={handleLogout} className="btn btn-danger w-100 btn-sm">
-                            <i className="bi bi-box-arrow-right me-2"></i> 
+                            <i className="bi bi-box-arrow-right me-2"></i>
                             Cerrar sesión
                         </button>
                     </div>
                 )}
 
                 {/* Footer */}
-                <div className="text-center p-2" style={{backgroundColor: '#1f1f1f'}}> 
-                    <h6 className="fw-normal mb-0 text-muted" style={{ fontSize: '0.7rem' }}>
+                <div className="text-center p-2" style={{backgroundColor: 'var(--text-dark)'}}>
+                    <h6 className="fw-normal mb-0" style={{ fontSize: '0.7rem', color: 'var(--text-light)' }}>
                         Easy Design - 2025
                     </h6>
                 </div>

@@ -1,20 +1,26 @@
 import { useEffect, useState, useCallback } from "react";
+import { Formik, Form, Field } from "formik";
 import client from "../../api/client";
+import Swal from 'sweetalert2';
+import { empleadoSchema } from "../../validations/schemas";
+import FormError from "../../components/UI/FormError";
 
 export default function Configuracion() {
   const [empleados, setEmpleados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(true);
-  const [form, setForm] = useState({
+  const [editTarget, setEditTarget] = useState(null);
+  const [editForm, setEditForm] = useState({ nombre_completo: "", username: "" });
+
+  // Initial values para Formik
+  const initialValues = {
     nombre_completo: "",
     username: "",
     password: "",
     password2: "",
     cargo: "Vendedor",
-  });
-  const [editTarget, setEditTarget] = useState(null);
-  const [editForm, setEditForm] = useState({ nombre_completo: "", username: "" });
+  };
 
   const authToken = localStorage.getItem("access");
 
@@ -61,35 +67,49 @@ export default function Configuracion() {
     }
   }
 
-  async function crearEmpleado(e) {
-    e.preventDefault();
+  async function handleSubmit(values, { setSubmitting, resetForm }) {
     setError(null);
-    if (form.password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
-    if (form.password !== form.password2) {
-      setError("Las contraseñas no coinciden.");
-      return;
-    }
+
     try {
       const payload = {
-        nombre_completo: form.nombre_completo,
-        username: form.username,
-        password: form.password,
-        cargo: form.cargo,
+        nombre_completo: values.nombre_completo,
+        username: values.username,
+        password: values.password,
+        cargo: values.cargo,
       };
+
       await client.post("/pos/api/empleados/", payload, { headers });
-      setForm({ nombre_completo: "", username: "", password: "", password2: "", cargo: "Vendedor" });
-      setShowForm(false);
+
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Empleado creado exitosamente',
+        showConfirmButton: false,
+        timer: 2000
+      });
+
+      resetForm();
       await loadEmpleados();
-      setShowForm(true);
     } catch (err) {
       console.error("Error al crear empleado:", err);
-      const errorMsg = err.response?.data?.detail || 
+      const errorMsg = err.response?.data?.detail ||
                       (typeof err.response?.data === 'object' ? JSON.stringify(err.response?.data) : null) ||
                       "No se pudo crear el empleado. Verifique los datos.";
+
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'error',
+        title: 'Error al crear empleado',
+        text: errorMsg,
+        showConfirmButton: false,
+        timer: 3000
+      });
+
       setError(errorMsg);
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -148,70 +168,103 @@ export default function Configuracion() {
       <div className="row g-3">
         <div className="col-lg-6">
           <div className="card">
-            <div className="card-header d-flex justify-content-between align-items-center">
-              <span>Crear nuevo empleado</span>
+            <div className="card-header bg-light-theme d-flex justify-content-between align-items-center">
+              <span style={{ color: 'var(--primary-color)', fontWeight: '600' }}>Crear nuevo empleado</span>
               <button className="btn btn-sm btn-warning" onClick={() => setShowForm((s) => !s)}>
                 {showForm ? "Ocultar" : "Mostrar"}
               </button>
             </div>
             {showForm && (
               <div className="card-body">
-                <form onSubmit={crearEmpleado}>
-                  <div className="mb-3">
-                    <label className="form-label">Nombre completo *</label>
-                    <input
-                      className="form-control"
-                      placeholder="Ej. Ana Pérez García"
-                      value={form.nombre_completo}
-                      onChange={(e) => setForm({ ...form, nombre_completo: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Usuario *</label>
-                    <input
-                      className="form-control"
-                      placeholder="Nombre de usuario único"
-                      value={form.username}
-                      onChange={(e) => setForm({ ...form, username: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Contraseña *</label>
-                    <input
-                      type="password"
-                      className="form-control"
-                      placeholder="Mínimo 6 caracteres"
-                      value={form.password}
-                      onChange={(e) => setForm({ ...form, password: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Confirmar contraseña *</label>
-                    <input
-                      type="password"
-                      className="form-control"
-                      placeholder="Repite la contraseña"
-                      value={form.password2}
-                      onChange={(e) => setForm({ ...form, password2: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Cargo *</label>
-                    <select
-                      className="form-select"
-                      value={form.cargo}
-                      onChange={(e) => setForm({ ...form, cargo: e.target.value })}
-                    >
-                      <option value="Vendedor">Vendedor</option>
-                      <option value="Administrador">Administrador</option>
-                    </select>
-                  </div>
-                  <button type="submit" className="btn btn-primary w-100">Crear empleado</button>
-                </form>
+                <Formik
+                  initialValues={initialValues}
+                  validationSchema={empleadoSchema}
+                  onSubmit={handleSubmit}
+                >
+                  {({ isSubmitting, errors, touched }) => (
+                    <Form>
+                      <div className="mb-3">
+                        <label className="form-label fw-semibold">
+                          Nombre completo <span className="text-danger">*</span>
+                        </label>
+                        <Field
+                          name="nombre_completo"
+                          type="text"
+                          className={`form-control ${errors.nombre_completo && touched.nombre_completo ? 'is-invalid' : ''}`}
+                          placeholder="Ej. Ana Pérez García"
+                        />
+                        <FormError name="nombre_completo" />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label fw-semibold">
+                          Usuario <span className="text-danger">*</span>
+                        </label>
+                        <Field
+                          name="username"
+                          type="text"
+                          className={`form-control ${errors.username && touched.username ? 'is-invalid' : ''}`}
+                          placeholder="Nombre de usuario único"
+                        />
+                        <FormError name="username" />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label fw-semibold">
+                          Contraseña <span className="text-danger">*</span>
+                        </label>
+                        <Field
+                          name="password"
+                          type="password"
+                          className={`form-control ${errors.password && touched.password ? 'is-invalid' : ''}`}
+                          placeholder="Mínimo 6 caracteres"
+                        />
+                        <FormError name="password" />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label fw-semibold">
+                          Confirmar contraseña <span className="text-danger">*</span>
+                        </label>
+                        <Field
+                          name="password2"
+                          type="password"
+                          className={`form-control ${errors.password2 && touched.password2 ? 'is-invalid' : ''}`}
+                          placeholder="Repite la contraseña"
+                        />
+                        <FormError name="password2" />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label fw-semibold">
+                          Cargo <span className="text-danger">*</span>
+                        </label>
+                        <Field
+                          as="select"
+                          name="cargo"
+                          className={`form-select ${errors.cargo && touched.cargo ? 'is-invalid' : ''}`}
+                        >
+                          <option value="Vendedor">Vendedor</option>
+                          <option value="Administrador">Administrador</option>
+                        </Field>
+                        <FormError name="cargo" />
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="btn btn-primary w-100"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <span className="spinner-border spinner-border-sm me-2"></span>
+                            Creando...
+                          </>
+                        ) : 'Crear empleado'}
+                      </button>
+                    </Form>
+                  )}
+                </Formik>
               </div>
             )}
           </div>
@@ -219,8 +272,8 @@ export default function Configuracion() {
 
         <div className="col-lg-6">
           <div className="card">
-            <div className="card-header d-flex justify-content-between align-items-center">
-              <span>Empleados registrados</span>
+            <div className="card-header bg-light-theme d-flex justify-content-between align-items-center">
+              <span style={{ color: 'var(--primary-color)', fontWeight: '600' }}>Empleados registrados</span>
               <span className="badge bg-warning text-dark">{empleados.length}</span>
             </div>
             <div className="card-body">
@@ -278,11 +331,11 @@ export default function Configuracion() {
                     ))}
                   </ul>
                   {editTarget && (
-                    <div className="modal d-block" tabIndex="-1" role="dialog" style={{ background: 'rgba(0,0,0,0.4)' }}>
+                    <div className="modal d-block" tabIndex="-1" role="dialog" style={{ background: 'rgba(0,0,0,0.5)' }}>
                       <div className="modal-dialog" role="document">
                         <div className="modal-content">
-                          <div className="modal-header">
-                            <h5 className="modal-title">Editar empleado</h5>
+                          <div className="modal-header bg-light-theme">
+                            <h5 className="modal-title" style={{ color: 'var(--primary-color)' }}>Editar empleado</h5>
                             <button type="button" className="btn-close" onClick={() => setEditTarget(null)} aria-label="Close"></button>
                           </div>
                           <div className="modal-body">

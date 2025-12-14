@@ -1,20 +1,24 @@
 import { useState } from "react";
+import { Formik, Form, Field } from "formik";
 import { useAuth } from "../../components/hooks/useAuth";
 import { useNavigate, Link } from "react-router-dom";
+import { loginSchema, initialValues } from "../../validations/schemas";
+import FormError from "../../components/UI/FormError";
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
 
-  async function onSubmit(e) {
-    e.preventDefault();
+  async function handleSubmit(values, { setSubmitting }) {
     try {
-      await login(form);
-      navigate("/pos"); // navegación sin recargar
+      setError("");
+      await login(values);
+      navigate("/pos");
     } catch (err) {
       setError(err.response?.data?.detail || "Credenciales inválidas. Por favor, inténtelo de nuevo.");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -28,40 +32,53 @@ export default function Login() {
       }}
     >
       <div className="card shadow-lg p-4" style={{ maxWidth: 400, width: "100%", backdropFilter: "blur(6px)" }}>
-        <h2 className="card-title text-center mb-4">Iniciar Sesión</h2>
+        <h2 className="card-title text-center mb-4" style={{ color: 'var(--primary-color)' }}>
+          Iniciar Sesión
+        </h2>
 
         {error && <div className="alert alert-danger text-center">{error}</div>}
 
-        <form onSubmit={onSubmit}>
-          <div className="mb-3">
-            <input
-              className="form-control"
-              placeholder="Usuario"
-              value={form.username}
-              onChange={(e) => setForm({ ...form, username: e.target.value })}
-              required
-            />
-          </div>
+        <Formik
+          initialValues={initialValues.login}
+          validationSchema={loginSchema}
+          onSubmit={handleSubmit}
+        >
+          {({ isSubmitting, errors, touched }) => (
+            <Form>
+              <div className="mb-3">
+                <Field
+                  name="username"
+                  type="text"
+                  className={`form-control ${errors.username && touched.username ? 'is-invalid' : ''}`}
+                  placeholder="Usuario"
+                />
+                <FormError name="username" />
+              </div>
 
-          <div className="mb-4">
-            <input
-              type="password"
-              className="form-control"
-              placeholder="Contraseña"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              required
-            />
-          </div>
+              <div className="mb-4">
+                <Field
+                  name="password"
+                  type="password"
+                  className={`form-control ${errors.password && touched.password ? 'is-invalid' : ''}`}
+                  placeholder="Contraseña"
+                />
+                <FormError name="password" />
+              </div>
 
-          <button type="submit" className="btn btn-primary w-100">
-            Entrar
-          </button>
-        </form>
+              <button
+                type="submit"
+                className="btn btn-primary w-100"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Ingresando...' : 'Entrar'}
+              </button>
+            </Form>
+          )}
+        </Formik>
 
         {/* Enlace para volver al Landing */}
         <div className="text-center mt-3">
-          <Link to="/" className="text-decoration-none">
+          <Link to="/" className="text-decoration-none" style={{ color: 'var(--secondary-color)' }}>
             ← Volver al inicio
           </Link>
         </div>

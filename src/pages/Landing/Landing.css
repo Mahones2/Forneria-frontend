@@ -4,14 +4,16 @@
     box-sizing: border-box;
 }
 
+/* Variables Landing - Tema Cafetería La Serena */
 :root {
-    --primary-color: #000000;
-    --secondary-color: #333333;
-    --text-dark: #000000;
-    --text-light: #666666;
-    --bg-light: #f5f5f5;
-    --white: #ffffff;
-    --gray: #e0e0e0;
+    --primary-color: #4A2C2A;      /* Café oscuro */
+    --secondary-color: #8B6F47;    /* Café medio */
+    --text-dark: #2C1810;          /* Café muy oscuro */
+    --text-light: #9B8B7E;         /* Beige oscuro */
+    --bg-light: #F5E6D3;           /* Crema */
+    --white: #FDFBF7;              /* Blanco cálido */
+    --gray: #D4C5B9;               /* Beige claro */
+    --accent-color: #D4A574;       /* Beige/dorado */
 }
 
 html {
@@ -90,7 +92,7 @@ body {
 }
 
 .hero {
-    background: linear-gradient(135deg, #000000, #333333);
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: var(--white);
     padding: 8rem 0;
     text-align: center;
@@ -120,9 +122,9 @@ body {
 
 .btn-primary {
     background: var(--white);
-    color: #000000;
+    color: var(--primary-color);
     font-weight: bold;
-    border: 2px solid #000000;
+    border: 2px solid var(--primary-color);
 }
 
 .btn:hover {
@@ -175,14 +177,14 @@ body {
     background: var(--white);
     padding: 2rem;
     border-radius: 12px;
-    border-left: 4px solid #000000;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--accent-color);
+    box-shadow: 0 2px 4px rgba(74, 44, 42, 0.1);
 }
 
 .testimonial-author {
     margin-top: 1rem;
     font-weight: bold;
-    color: #000000;
+    color: var(--primary-color);
 }
 
 
@@ -202,7 +204,7 @@ body {
 .contact-form input,
 .contact-form textarea {
     padding: 1rem;
-    border: 2px solid #000000;
+    border: 2px solid var(--primary-color);
     border-radius: 8px;
     font-size: 1rem;
     background: var(--white);
@@ -211,12 +213,12 @@ body {
 .contact-form input:focus,
 .contact-form textarea:focus {
     outline: none;
-    border-color: #333333;
+    border-color: var(--accent-color);
 }
 
 
 .footer {
-    background: #000000;
+    background: var(--primary-color);
     color: var(--white);
     text-align: center;
     padding: 2rem 0;
@@ -246,8 +248,8 @@ body {
 
 .producto-card:hover {
     transform: translateY(-8px);
-    border-color: #000000;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    border-color: var(--secondary-color);
+    box-shadow: 0 8px 20px rgba(74, 44, 42, 0.15);
 }
 
 .producto-icon {
@@ -258,7 +260,7 @@ body {
 .producto-card h3 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
-    color: #000000;
+    color: var(--primary-color);
 }
 
 .producto-card p {
@@ -325,20 +327,20 @@ body {
     background: var(--bg-light);
     padding: 2.5rem;
     border-radius: 12px;
-    border: 2px solid #000000;
+    border: 2px solid var(--secondary-color);
     transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .nosotros-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 16px rgba(74, 44, 42, 0.2);
 }
 
 .nosotros-card h3 {
     font-size: 1.75rem;
     margin-bottom: 1.5rem;
-    color: #000000;
-    border-bottom: 3px solid #000000;
+    color: var(--primary-color);
+    border-bottom: 3px solid var(--accent-color);
     padding-bottom: 0.5rem;
 }
 
@@ -392,7 +394,7 @@ body {
 .contacto-card h3 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
-    color: #000000;
+    color: var(--primary-color);
 }
 
 .contacto-card p {
@@ -408,29 +410,16 @@ body {
 }
 
 .btn-instagram {
-    background: #000000;
+    background: var(--primary-color);
     color: var(--white);
     font-weight: bold;
-    border: 2px solid #000000;
+    border: 2px solid var(--primary-color);
     padding: 1.2rem 2.5rem;
     font-size: 1.1rem;
 }
 
 .btn-instagram:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-    background: #333333;
-}
-
-@media (max-width: 768px) {
-    /* ...existing code... */
-    
-    .contacto-container {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
-    
-    .portada-img {
-        max-width: 100%;
-    }
+    box-shadow: 0 6px 20px rgba(74, 44, 42, 0.4);
+    background: var(--secondary-color);
 }

@@ -1,0 +1,483 @@
+/**
+ * Bootstrap Overrides - Tema Cafetería La Serena
+ * Sobrescribe los colores por defecto de Bootstrap 5 con la paleta del tema
+ */
+
+/* ========== Colores de Botones ========== */
+
+/* Primary Button */
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--text-white);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+  color: var(--text-white);
+}
+
+.btn-primary:active,
+.btn-primary.active {
+  background-color: #3A1C1A !important;
+  border-color: #3A1C1A !important;
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+  color: var(--text-white);
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+  background-color: #7A5F37;
+  border-color: #7A5F37);
+  color: var(--text-white);
+}
+
+/* Success Button */
+.btn-success {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.btn-success:hover,
+.btn-success:focus {
+  background-color: #5A7A1D;
+  border-color: #5A7A1D;
+}
+
+/* Danger Button */
+.btn-danger {
+  background-color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+  background-color: #8B4225;
+  border-color: #8B4225;
+}
+
+/* Warning Button */
+.btn-warning {
+  background-color: var(--warning-color);
+  border-color: var(--warning-color);
+  color: var(--text-dark);
+}
+
+.btn-warning:hover,
+.btn-warning:focus {
+  background-color: #C89518;
+  border-color: #C89518);
+  color: var(--text-dark);
+}
+
+/* Info Button */
+.btn-info {
+  background-color: var(--info-color);
+  border-color: var(--info-color);
+  color: var(--text-white);
+}
+
+.btn-info:hover,
+.btn-info:focus {
+  background-color: #7A5F37;
+  border-color: #7A5F37;
+}
+
+/* Light Button */
+.btn-light {
+  background-color: var(--background-light);
+  border-color: var(--border-color);
+  color: var(--text-dark);
+}
+
+.btn-light:hover,
+.btn-light:focus {
+  background-color: var(--accent-color);
+  border-color: var(--border-dark);
+  color: var(--text-dark);
+}
+
+/* Dark Button */
+.btn-dark {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--text-white);
+}
+
+.btn-dark:hover,
+.btn-dark:focus {
+  background-color: #3A1C1A;
+  border-color: #3A1C1A;
+}
+
+/* Outline Buttons */
+.btn-outline-primary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--text-white);
+}
+
+.btn-outline-secondary {
+  color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+  color: var(--text-white);
+}
+
+/* ========== Alerts ========== */
+
+.alert-primary {
+  background-color: rgba(74, 44, 42, 0.1);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.alert-success {
+  background-color: rgba(107, 142, 35, 0.1);
+  border-color: var(--success-color);
+  color: var(--success-color);
+}
+
+.alert-danger {
+  background-color: rgba(160, 82, 45, 0.1);
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+}
+
+.alert-warning {
+  background-color: rgba(218, 165, 32, 0.1);
+  border-color: var(--warning-color);
+  color: var(--text-dark);
+}
+
+.alert-info {
+  background-color: rgba(139, 111, 71, 0.1);
+  border-color: var(--info-color);
+  color: var(--info-color);
+}
+
+/* ========== Badges ========== */
+
+.badge {
+  font-weight: 500;
+}
+
+.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+
+.bg-secondary {
+  background-color: var(--secondary-color) !important;
+}
+
+.bg-success {
+  background-color: var(--success-color) !important;
+}
+
+.bg-danger {
+  background-color: var(--danger-color) !important;
+}
+
+.bg-warning {
+  background-color: var(--warning-color) !important;
+  color: var(--text-dark) !important;
+}
+
+.bg-info {
+  background-color: var(--info-color) !important;
+}
+
+.bg-light {
+  background-color: var(--background-light) !important;
+  color: var(--text-dark) !important;
+}
+
+.bg-dark {
+  background-color: var(--primary-color) !important;
+  color: var(--text-white) !important;
+}
+
+/* ========== Text Colors ========== */
+
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+.text-secondary {
+  color: var(--secondary-color) !important;
+}
+
+.text-success {
+  color: var(--success-color) !important;
+}
+
+.text-danger {
+  color: var(--danger-color) !important;
+}
+
+.text-warning {
+  color: var(--warning-color) !important;
+}
+
+.text-info {
+  color: var(--info-color) !important;
+}
+
+.text-muted {
+  color: var(--text-light) !important;
+}
+
+.text-dark {
+  color: var(--text-dark) !important;
+}
+
+/* ========== Cards ========== */
+
+.card {
+  border-color: var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+  transition: box-shadow var(--transition-normal);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-medium);
+}
+
+.card-header {
+  background-color: var(--background-light);
+  border-bottom-color: var(--border-color);
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+/* ========== Forms ========== */
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 0.25rem rgba(212, 165, 116, 0.25);
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: var(--danger-color);
+}
+
+.form-control.is-invalid:focus,
+.form-select.is-invalid:focus {
+  border-color: var(--danger-color);
+  box-shadow: 0 0 0 0.25rem rgba(160, 82, 45, 0.25);
+}
+
+.form-control.is-valid,
+.form-select.is-valid {
+  border-color: var(--success-color);
+}
+
+.form-control.is-valid:focus,
+.form-select.is-valid:focus {
+  border-color: var(--success-color);
+  box-shadow: 0 0 0 0.25rem rgba(107, 142, 35, 0.25);
+}
+
+.invalid-feedback {
+  color: var(--danger-color);
+}
+
+.valid-feedback {
+  color: var(--success-color);
+}
+
+/* ========== Nav Tabs ========== */
+
+.nav-tabs .nav-link {
+  color: var(--text-medium);
+}
+
+.nav-tabs .nav-link:hover {
+  border-color: var(--border-color) var(--border-color) var(--background-white);
+  color: var(--primary-color);
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--primary-color);
+  background-color: var(--background-white);
+  border-color: var(--border-color) var(--border-color) var(--background-white);
+}
+
+/* ========== Pagination ========== */
+
+.pagination .page-link {
+  color: var(--primary-color);
+  border-color: var(--border-color);
+}
+
+.pagination .page-link:hover {
+  color: var(--secondary-color);
+  background-color: var(--background-light);
+  border-color: var(--border-color);
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--text-white);
+}
+
+.pagination .page-item.disabled .page-link {
+  color: var(--text-light);
+  background-color: var(--background-white);
+  border-color: var(--border-color);
+}
+
+/* ========== Progress Bars ========== */
+
+.progress {
+  background-color: var(--background-light);
+}
+
+.progress-bar {
+  background-color: var(--primary-color);
+}
+
+.progress-bar-striped {
+  background-image: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.15) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.15) 75%,
+    transparent 75%,
+    transparent
+  );
+}
+
+/* ========== Tables ========== */
+
+.table {
+  color: var(--text-dark);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: rgba(245, 230, 211, 0.3);
+}
+
+.table-hover > tbody > tr:hover > * {
+  background-color: var(--hover-medium);
+}
+
+.table thead th {
+  background-color: var(--background-light);
+  color: var(--text-dark);
+  font-weight: 600;
+  border-bottom-color: var(--border-dark);
+}
+
+/* ========== Links ========== */
+
+.link-primary {
+  color: var(--primary-color) !important;
+}
+
+.link-primary:hover {
+  color: var(--secondary-color) !important;
+}
+
+.link-secondary {
+  color: var(--secondary-color) !important;
+}
+
+.link-secondary:hover {
+  color: var(--primary-color) !important;
+}
+
+/* ========== Modals ========== */
+
+.modal-header {
+  background-color: var(--background-light);
+  border-bottom-color: var(--border-color);
+}
+
+.modal-footer {
+  border-top-color: var(--border-color);
+}
+
+/* ========== Dropdowns ========== */
+
+.dropdown-menu {
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-medium);
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: var(--hover-medium);
+  color: var(--text-dark);
+}
+
+.dropdown-item.active,
+.dropdown-item:active {
+  background-color: var(--primary-color);
+  color: var(--text-white);
+}
+
+/* ========== Spinners/Loaders ========== */
+
+.spinner-border {
+  border-color: var(--accent-color);
+  border-right-color: transparent;
+}
+
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
+}
+
+/* ========== Custom Classes ========== */
+
+.hover-lift {
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-heavy);
+}
+
+.hover-underline {
+  position: relative;
+}
+
+.hover-underline::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -2px;
+  left: 0;
+  background-color: var(--accent-color);
+  transition: width var(--transition-normal);
+}
+
+.hover-underline:hover::after {
+  width: 100%;
+}

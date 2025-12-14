@@ -1,0 +1,156 @@
+/**
+ * Tema Cafetería La Serena
+ * Paleta de colores cálida inspirada en café, beige y crema
+ */
+
+:root {
+  /* ========== Colores Principales ========== */
+  --primary-color: #4A2C2A;      /* Café oscuro - Color principal */
+  --secondary-color: #8B6F47;    /* Café medio - Color secundario */
+  --accent-color: #D4A574;       /* Beige/dorado - Acentos */
+  --background-light: #F5E6D3;   /* Crema - Fondos claros */
+  --background-white: #FDFBF7;   /* Blanco cálido - Fondos principales */
+
+  /* ========== Estados y Acciones ========== */
+  --success-color: #6B8E23;      /* Verde oliva - Éxito */
+  --danger-color: #A0522D;       /* Sienna (café rojizo) - Error/Peligro */
+  --warning-color: #DAA520;      /* Dorado - Advertencia */
+  --info-color: #8B6F47;         /* Café medio - Información */
+
+  /* ========== Textos ========== */
+  --text-dark: #2C1810;          /* Café muy oscuro - Texto principal */
+  --text-medium: #5D4E37;        /* Café texto - Texto secundario */
+  --text-light: #9B8B7E;         /* Beige oscuro - Texto deshabilitado/hints */
+  --text-white: #FFFFFF;         /* Blanco - Texto sobre fondos oscuros */
+
+  /* ========== Bordes y Sombras ========== */
+  --border-color: #D4C5B9;       /* Beige claro - Bordes */
+  --border-dark: #8B6F47;        /* Café medio - Bordes énfasis */
+  --shadow-light: rgba(74, 44, 42, 0.1);
+  --shadow-medium: rgba(74, 44, 42, 0.2);
+  --shadow-heavy: rgba(74, 44, 42, 0.3);
+
+  /* ========== Fondos Adicionales ========== */
+  --hover-light: rgba(212, 165, 116, 0.1);  /* Hover sutil */
+  --hover-medium: rgba(212, 165, 116, 0.2); /* Hover medio */
+  --active-background: #E8D5C4;              /* Fondo activo */
+
+  /* ========== Espaciado y Layout ========== */
+  --sidebar-width: 250px;
+  --navbar-height: 60px;
+  --border-radius: 8px;
+  --border-radius-sm: 4px;
+  --border-radius-lg: 12px;
+
+  /* ========== Transiciones ========== */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+/* ========== Resets y Mejoras Globales ========== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--text-dark);
+  background-color: var(--background-white);
+}
+
+/* ========== Enlaces ========== */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--secondary-color);
+  text-decoration: none;
+}
+
+/* ========== Scrollbars Personalizados ========== */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-light);
+  border-radius: var(--border-radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--secondary-color);
+  border-radius: var(--border-radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+/* ========== Utilidades de Texto ========== */
+.text-primary-theme {
+  color: var(--primary-color) !important;
+}
+
+.text-secondary-theme {
+  color: var(--secondary-color) !important;
+}
+
+.text-accent {
+  color: var(--accent-color) !important;
+}
+
+/* ========== Utilidades de Fondos ========== */
+.bg-primary-theme {
+  background-color: var(--primary-color) !important;
+  color: var(--text-white) !important;
+}
+
+.bg-secondary-theme {
+  background-color: var(--secondary-color) !important;
+  color: var(--text-white) !important;
+}
+
+.bg-accent {
+  background-color: var(--accent-color) !important;
+  color: var(--text-dark) !important;
+}
+
+.bg-light-theme {
+  background-color: var(--background-light) !important;
+}
+
+.bg-white-theme {
+  background-color: var(--background-white) !important;
+}
+
+/* ========== Sombras ========== */
+.shadow-theme-sm {
+  box-shadow: 0 2px 4px var(--shadow-light);
+}
+
+.shadow-theme-md {
+  box-shadow: 0 4px 8px var(--shadow-medium);
+}
+
+.shadow-theme-lg {
+  box-shadow: 0 8px 16px var(--shadow-heavy);
+}
+
+/* ========== Bordes ========== */
+.border-theme {
+  border-color: var(--border-color) !important;
+}
+
+.border-theme-dark {
+  border-color: var(--border-dark) !important;
+}
+

@@ -1,19 +1,19 @@
-/* Links del navbar */
+/* Links del navbar - Tema Cafetería */
 .nav-link {
-  color: #ffffff; /* blanco base */
-  transition: background-color 0.3s ease, color 0.3s ease;
+  color: var(--text-white);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
 .nav-link:hover {
-  background-color: #343a40; /* gris oscuro al pasar el mouse */
-  color: #ffc107; /* amarillo Bootstrap (warning) */
-  border-radius: 4px;
+  background-color: var(--secondary-color);
+  color: var(--accent-color);
+  border-radius: var(--border-radius-sm);
 }
 
 /* Encabezados de sección dentro del navbar */
 nav h6 {
-  color: #adb5bd; /* gris claro para contraste sobre negro */
+  color: var(--accent-color);
   font-weight: bold;
-  font-size: 0.75rem; /* más pequeño, estilo sección */
-  letter-spacing: 1px; /* separación para que se vea más "menú" */
+  font-size: 0.75rem;
+  letter-spacing: 1px;
 }
