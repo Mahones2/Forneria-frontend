@@ -110,37 +110,39 @@ function NavbarApp() {
     // Menú para Administrador
     const menuAdministrador = (
         <div className="w-100">
-            <MenuTitle title="Dashboards" />
-            <ul className="nav flex-column align-items-start px-0">
-                <NavLink to="/dashboard/financiero" label="Financiero" />
-                <NavLink to="/dashboard/inventario" label="Inventario" />
-            </ul>
 
             <MenuTitle title="Operación" />
             <ul className="nav flex-column align-items-start px-0">
                 <NavLink to="/pos" label="Punto de Venta" />
                 <NavLink to="/ventas" label="Ventas Realizadas" />
-                {/* Contador de pedidos añadido aquí */}
-                <NavLink to="/pedidos" label="Pedidos/Delivery" showCounter={true} /> 
+                <NavLink to="/monitor" label="Pedidos" showCounter={true} /> 
             </ul>
 
             <MenuTitle title="Gestión" />
             <ul className="nav flex-column align-items-start px-0">
                 <NavLink to="/inventario" label="Inventario (Stock)" />
                 <NavLink to="/clientes" label="Clientes" />
-                <NavLink to="/configuracion" label="Configuración" />
+                <NavLink to="/configuracion" label="Empleados" />
+            </ul>
+
+            <MenuTitle title="Dashboards" />
+            <ul className="nav flex-column align-items-start px-0">
+                <NavLink to="/dashboard/financiero" label="Financiero" />
+                <NavLink to="/dashboard/inventario" label="Inventario" />
             </ul>
         </div>
     );
 
-    // Menú para Vendedor
+    // Menú para Vendedor / Cocina
     const menuVendedor = (
         <div className="w-100">
             <MenuTitle title="Accesos" />
             <ul className="nav flex-column align-items-start px-0">
                 <NavLink to="/pos" label="Punto de Venta" />
-                {/* Contador de pedidos añadido aquí */}
-                <NavLink to="/pedidos" label="Pedidos" showCounter={true} /> 
+                
+                {/* --- CAMBIO AQUÍ --- */}
+                <NavLink to="/monitor" label="Pedidos" showCounter={true} /> 
+                
                 <NavLink to="/inventario" label="Inventario (Consulta)" />
                 <NavLink to="/ventas" label="Mis Ventas" />
             </ul>
@@ -153,11 +155,16 @@ function NavbarApp() {
             <div className="text-center py-4 border-bottom border-secondary">
                 <img src={logo} alt="Logo" className="img-fluid" style={{ maxHeight: "40px" }} />
                 
-                {empleado && (
-                    <div className="mt-3 text-center px-3">
-                        <div className="mb-1 fw-bold text-warning" style={{ fontSize: '1rem' }}>
+                 {empleado && (
+                    <div className="mt-2">
+                        {/* 1. Nombre Completo (Línea Superior) */}
+                        {/* Usamos un div para garantizar que sea un bloque */}
+                        <div className="mb-1 fw-bold">
                             {empleado.nombre_completo}
+                            <br></br>
+                            {empleado.cargo}
                         </div>
+                        
                     </div>
                 )}
             </div>
