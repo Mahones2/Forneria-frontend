@@ -277,13 +277,39 @@ function PedidoLanding() {
             items: cart.map(i => ({ producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio_unitario.toString() })), 
             pagos: pagosRealizados.map(p => ({ metodo: p.metodo, monto: p.monto.toString(), monto_recibido: p.monto_recibido.toString() }))
         };
+        console.log('📤 Enviando pedido:', ventaPayload);
         try {
-            await client.post('/pos/api/kiosco/crear_pedido/', ventaPayload);
-            Swal.fire({title: '¡Pedido Enviado!', text: 'Gracias por tu compra', icon: 'success'}).then(() => {
-                window.location.reload(); 
+            const response = await client.post('/pos/api/kiosco/crear_pedido/', ventaPayload);
+            console.log('✅ Pedido creado:', response.data);
+            Swal.fire({
+                title: '¡Pedido Enviado!', 
+                text: 'Gracias por tu compra', 
+                icon: 'success'
+            }).then(() => {
+                // Limpiar el estado en vez de recargar la página
+                setCart([]);
+                setPagosRealizados([]);
+                setClienteData(null);
+                setRutCliente("");
+                setFechaEntrega("");
+                setMontoPagoActual("");
             });
         } catch (err) {
-            Swal.fire('Error', 'Error procesando pedido', 'error');
+            console.error('❌ Error creando pedido:', err);
+            console.error('Detalles:', err.response?.data);
+            
+            let errorMsg = 'Error procesando pedido';
+            if (err.code === 'ECONNABORTED') {
+                errorMsg = 'La petición tardó demasiado. Intenta nuevamente.';
+            } else if (err.response?.data?.detail) {
+                errorMsg = err.response.data.detail;
+            } else if (err.response?.data) {
+                errorMsg = JSON.stringify(err.response.data);
+            } else if (err.message) {
+                errorMsg = err.message;
+            }
+            
+            Swal.fire('Error', errorMsg, 'error');
         } finally {
             setIsProcessing(false);
         }

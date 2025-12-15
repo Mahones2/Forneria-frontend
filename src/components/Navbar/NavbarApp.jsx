@@ -31,9 +31,10 @@ const PedidoCounter = ({ authToken, collapsed }) => {
 
     useEffect(() => {
         loadPedidoCount();
-        const interval = setInterval(loadPedidoCount, 15000); 
+        const interval = setInterval(loadPedidoCount, 30000); // Cambio: 30s en vez de 15s
         return () => clearInterval(interval); 
-    }, [loadPedidoCount]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Dependencias vacías para evitar recrear interval
 
     if (loading) return null;
     
