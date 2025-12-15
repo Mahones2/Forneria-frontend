@@ -122,10 +122,11 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
             productData.append('precio_venta', values.precio_venta);
             productData.append('stock_minimo_global', values.stock_minimo_global);
             
-            // Adjuntar etiquetas (array de IDs)
-            if (values.etiquetas && values.etiquetas.length > 0) {
-                values.etiquetas.forEach(tagId => {
-                    productData.append('etiquetas', tagId);
+            // Adjuntar etiquetas (asegurar que siempre sea un array)
+            const etiquetasArray = Array.isArray(values.etiquetas) ? values.etiquetas : (values.etiquetas ? [values.etiquetas] : []);
+            if (etiquetasArray.length > 0) {
+                etiquetasArray.forEach(tagId => {
+                    productData.append('etiquetas', parseInt(tagId, 10));
                 });
             }
             // Si no hay etiquetas, simplemente no agregamos nada al FormData
@@ -340,10 +341,10 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
                                                                 multiple
                                                                 className="form-select"
                                                                 style={{ height: '100px' }}
-                                                                value={values.etiquetas || []}
+                                                                value={Array.isArray(values.etiquetas) ? values.etiquetas : []}
                                                                 onChange={(e) => {
                                                                     const selectedOptions = Array.from(e.target.selectedOptions);
-                                                                    const selectedValues = selectedOptions.map(option => parseInt(option.value));
+                                                                    const selectedValues = selectedOptions.map(option => parseInt(option.value, 10));
                                                                     setFieldValue('etiquetas', selectedValues);
                                                                 }}
                                                             >
