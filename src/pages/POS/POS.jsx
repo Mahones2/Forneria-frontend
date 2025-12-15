@@ -880,11 +880,11 @@ function POS() {
                                 {nutricional ? (
                                     <table className="table table-bordered table-sm text-start">
                                         <tbody>
-                                            <tr><th>Calorías</th><td>{nutricional.calorias}g</td></tr>
-                                            <tr><th>Proteínas</th><td>{nutricional.proteinas}g</td></tr>
-                                            <tr><th>Grasas</th><td>{nutricional.grasas}g</td></tr>
-                                            <tr><th>Carbos</th><td>{nutricional.carbohidratos}g</td></tr>
-                                            <tr><th>Azúcares</th><td>{nutricional.azucares}g</td></tr>
+                                            <tr><th>Calorías</th><td>{nutricional.calorias} kcal</td></tr>
+                                            <tr><th>Proteínas</th><td>{nutricional.proteinas} g</td></tr>
+                                            <tr><th>Grasas</th><td>{nutricional.grasas} g</td></tr>
+                                            <tr><th>Hidratos de carbono</th><td>{nutricional.carbohidratos} g</td></tr>
+                                            <tr><th>Azúcares</th><td>{nutricional.azucares} g</td></tr>
                                             <tr><th>Sodio</th><td>{nutricional.sodio} mg</td></tr>
                                         </tbody>
                                     </table>
