@@ -133,26 +133,29 @@ export default function InventarioPage() {
                                             </small>
                                         </div>
                                         
-                                        <div className="d-flex align-items-center gap-2">
+                                        {/* --- CAMBIO AQUÍ: flex-shrink-0 asegura que los botones no se aplasten --- */}
+                                        <div className="d-flex align-items-center gap-2 flex-shrink-0">
                                             <span className={`badge rounded-pill ${prod.stock_fisico > 0 ? 'bg-primary' : 'bg-danger'} ${selectedProducto?.id === prod.id ? 'border border-light' : ''}`}>
                                                 {prod.stock_fisico}
                                             </span>
                                             
-                                            {/* Botones de Acción (Pequeños) */}
-                                            <div className="btn-group">
+                                            {/* Botones de Acción Responsivos (Íconos + Separación) */}
+                                            <div className="d-flex gap-1">
                                                 <button 
-                                                    className="btn btn-sm btn-light border"
+                                                    className={`btn btn-sm ${selectedProducto?.id === prod.id ? 'btn-light text-primary' : 'btn-outline-secondary'}`}
                                                     onClick={(e) => handleEditProduct(e, prod)}
                                                     title="Editar"
+                                                    style={{ width: '32px', height: '32px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                                 >
-                                                    ✏️
+                                                    <i className="bi bi-pencil-fill" style={{ fontSize: '0.8rem' }}></i>
                                                 </button>
                                                 <button 
-                                                    className="btn btn-sm btn-light border text-danger"
+                                                    className={`btn btn-sm ${selectedProducto?.id === prod.id ? 'btn-light text-danger' : 'btn-outline-danger'}`}
                                                     onClick={(e) => handleDeleteProduct(e, prod.id)}
                                                     title="Eliminar"
+                                                    style={{ width: '32px', height: '32px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                                 >
-                                                    🗑️
+                                                    <i className="bi bi-trash-fill" style={{ fontSize: '0.8rem' }}></i>
                                                 </button>
                                             </div>
                                         </div>

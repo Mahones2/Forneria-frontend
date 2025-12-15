@@ -42,11 +42,19 @@ function PrivateRoute({ children }) {
 // Componente Layout Privado
 function PrivateLayout({ children }) {
     return (
-        <div className="d-flex min-vh-100">
+        // flex-column en móvil (Navbar arriba, contenido abajo)
+        // flex-md-row en escritorio (Navbar izquierda, contenido derecha)
+        <div className="d-flex flex-column flex-md-row vh-100 overflow-hidden bg-light">
+            
+            {/* El Navbar se encarga de mostrarse como barra superior o lateral según el tamaño */}
             <NavbarApp /> 
-            <div className="flex-grow-1 p-4 overflow-auto">
-                {children}
-            </div>
+            
+            {/* Área de contenido principal */}
+            <main className="flex-grow-1 overflow-auto position-relative h-100 w-100">
+                <div className="p-3 p-md-4">
+                    {children}
+                </div>
+            </main>
         </div>
     );
 }

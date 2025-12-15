@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import client from '../../api/client'; 
 import Swal from 'sweetalert2';
 
-// --- HELPERS ---
+// --- HELPERS (Sin cambios lógicos, solo quitamos estilos visuales innecesarios) ---
 const formatFecha = (fechaStr) => {
     if (!fechaStr) return "Lo antes posible";
     const fecha = new Date(fechaStr);
@@ -18,7 +18,6 @@ const formatHoraCreacion = (fechaIso) => {
     return new Date(fechaIso).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
 };
 
-// CAMBIO DE NOMBRE AQUÍ
 export default function PedidosInternos() {
     const [pendientes, setPendientes] = useState([]);
     const [terminados, setTerminados] = useState([]);
@@ -63,7 +62,6 @@ export default function PedidosInternos() {
             Swal.fire({
                 icon: 'success', title: 'PEDIDO LISTO',
                 toast: true, position: 'top-end', showConfirmButton: false, timer: 1500,
-                background: '#000', color: '#fff', iconColor: '#fff' 
             });
             fetchPedidos(true); 
         } catch (err) {
@@ -71,75 +69,61 @@ export default function PedidosInternos() {
         }
     };
 
-    // --- TARJETA ESTILO "HIGH CONTRAST" CON RUT Y DIRECCIÓN ---
+    // --- TARJETA RE-DISEÑADA (ESTILO MODERNO) ---
     const PedidoCard = ({ venta, esPendiente }) => {
         const listaProductos = venta.items || venta.detalles || [];
         const esWeb = venta.canal === 'web'; 
-        
-        // Obtenemos la dirección disponible
         const direccionFinal = venta.direccion || venta.direccion_despacho;
 
-        const cardClass = esPendiente 
-            ? 'border-2 border-dark shadow' 
-            : 'border-0 opacity-50 grayscale'; 
-
-        const headerClass = esPendiente
-            ? 'bg-dark text-white' 
-            : 'bg-secondary text-white'; 
+        // Estilos dinámicos modernos
+        const headerClass = esPendiente ? 'bg-primary text-white' : 'bg-success text-white';
+        const cardOpacity = esPendiente ? 'opacity-100' : 'opacity-75';
 
         return (
-            <div className={`card mb-4 rounded-0 ${cardClass}`} style={{ transition: 'all 0.3s' }}>
+            <div className={`card mb-3 border-0 shadow-sm rounded-4 overflow-hidden ${cardOpacity}`} style={{ transition: 'transform 0.2s' }}>
                 
                 {/* CABECERA */}
-                <div className={`card-header rounded-0 py-2 d-flex justify-content-between align-items-center ${headerClass}`}>
+                <div className={`card-header py-2 px-3 d-flex justify-content-between align-items-center ${headerClass}`}>
                     <div className="d-flex align-items-center gap-2">
-                        <h4 className="fw-bold m-0 font-monospace">#{venta.folio_documento || venta.id}</h4>
-                        <span className={`badge border ${esPendiente ? 'bg-white text-dark' : 'bg-dark text-white'} rounded-0`}>
+                        <span className="fw-bold fs-5">#{venta.folio_documento || venta.id}</span>
+                        <span className={`badge ${esPendiente ? 'bg-white text-primary' : 'bg-white text-success'} rounded-pill px-2 small`}>
                             {esWeb ? 'WEB' : 'POS'}
                         </span>
                     </div>
                     <div className="text-end lh-1">
-                        <small className="d-block text-uppercase" style={{fontSize:'0.65rem', letterSpacing:'1px'}}>Hora</small>
-                        <span className="fw-bold font-monospace">{formatHoraCreacion(venta.fecha)}</span>
+                        <small className="d-block opacity-75" style={{fontSize:'0.7rem'}}>Hora</small>
+                        <span className="fw-bold">{formatHoraCreacion(venta.fecha)}</span>
                     </div>
                 </div>
 
                 <div className="card-body p-0">
                     
-                    {/* --- INFO CLIENTE (RUT Y DIRECCIÓN AQUÍ) --- */}
-                    <div className="bg-light border-bottom border-dark px-3 py-2">
+                    {/* --- INFO CLIENTE --- */}
+                    <div className="bg-light p-3 border-bottom">
                         <div className="d-flex justify-content-between align-items-start">
-                            
-                            {/* LADO IZQUIERDO: Nombre, RUT, Dirección */}
-                            <div className="d-flex flex-column" style={{maxWidth: '65%'}}>
-                                {/* Nombre */}
-                                <div className="text-truncate">
-                                    <i className="bi bi-person-fill me-1"></i>
-                                    <strong className="text-uppercase font-monospace text-dark">
-                                        {venta.cliente_nombre || 'CLIENTE'}
-                                    </strong>
+                            <div className="d-flex flex-column" style={{maxWidth: '70%'}}>
+                                <div className="fw-bold text-dark text-truncate">
+                                    <i className="bi bi-person-circle me-2 text-secondary"></i>
+                                    {venta.cliente_nombre || 'Consumidor Final'}
                                 </div>
                                 
-                                {/* RUT (Nuevo) */}
                                 {venta.cliente_rut && (
-                                    <small className="text-muted font-monospace ms-4" style={{fontSize: '0.8rem'}}>
-                                        RUT: {venta.cliente_rut}
+                                    <small className="text-muted ms-4" style={{fontSize: '0.8rem'}}>
+                                        {venta.cliente_rut}
                                     </small>
                                 )}
 
-                                {/* Dirección (Nuevo Ubicación) */}
                                 {direccionFinal && (
-                                    <div className="text-danger small mt-1 lh-sm fw-bold">
+                                    <div className="text-primary small mt-1 fw-semibold">
                                         <i className="bi bi-geo-alt-fill me-1"></i>
                                         {direccionFinal}
                                     </div>
                                 )}
                             </div>
 
-                            {/* LADO DERECHO: Fecha Entrega */}
                             <div className="text-end">
-                                 <small className="text-muted text-uppercase me-1" style={{fontSize:'0.7rem'}}>Entrega:</small>
-                                 <strong className="text-dark font-monospace d-block">{formatFecha(venta.fecha_entrega)}</strong>
+                                 <small className="text-muted d-block" style={{fontSize:'0.7rem'}}>Entrega:</small>
+                                 <span className="badge bg-white text-dark border fw-normal">{formatFecha(venta.fecha_entrega)}</span>
                             </div>
                         </div>
                     </div>
@@ -147,75 +131,91 @@ export default function PedidosInternos() {
                     {/* LISTA DE PRODUCTOS */}
                     <ul className="list-group list-group-flush">
                         {listaProductos.map((item, idx) => (
-                            <li key={idx} className="list-group-item d-flex align-items-center border-bottom-0 py-2">
-                                <span className="badge bg-dark rounded-0 me-3 fs-6 font-monospace" style={{minWidth:'40px'}}>
+                            <li key={idx} className="list-group-item d-flex align-items-center py-2 px-3 border-light">
+                                <span className="badge bg-secondary rounded-pill me-3" style={{minWidth:'30px'}}>
                                     {item.cantidad}
                                 </span>
                                 <div className="lh-sm">
-                                    <span className="fw-bold text-dark text-uppercase d-block">
+                                    <span className="fw-semibold text-dark">
                                         {item.producto_nombre}
                                     </span>
                                 </div>
                             </li>
                         ))}
-                        {listaProductos.length === 0 && <li className="list-group-item text-muted fst-italic">Sin detalles</li>}
+                        {listaProductos.length === 0 && <li className="list-group-item text-muted small fst-italic p-3">Sin detalles</li>}
                     </ul>
 
-                    {/* BOTÓN ACCIÓN */}
+                    {/* BOTÓN ACCIÓN (Solo pendientes) */}
                     {esPendiente && (
-                        <button 
-                            className="btn btn-dark w-100 rounded-0 py-3 fw-bold text-uppercase" 
-                            style={{letterSpacing: '2px', borderTop: '2px solid #000'}}
-                            onClick={() => marcarListo(venta.id)}
-                        >
-                            <i className="bi bi-check-square-fill me-2"></i> Listo
-                        </button>
+                        <div className="p-3 bg-white border-top">
+                            <button 
+                                className="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm" 
+                                onClick={() => marcarListo(venta.id)}
+                            >
+                                <i className="bi bi-check-lg me-2"></i> Marcar como Listo
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>
         );
     };
 
-    if (loading) return <div className="d-flex justify-content-center align-items-center vh-100 bg-secondary"><div className="spinner-border text-white"></div></div>;
-    if (error) return <div className="alert alert-dark m-5 text-center rounded-0">{error} <br/><button className="btn btn-light rounded-0 mt-2" onClick={() => fetchPedidos()}>Reintentar</button></div>;
+    if (loading) return (
+        <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+            <div className="spinner-border text-primary" role="status"></div>
+        </div>
+    );
+    
+    if (error) return (
+        <div className="container mt-5">
+            <div className="alert alert-danger shadow-sm text-center">
+                <i className="bi bi-exclamation-triangle-fill me-2"></i> {error}
+                <div className="mt-3">
+                    <button className="btn btn-outline-danger" onClick={() => fetchPedidos()}>Reintentar</button>
+                </div>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="container-fluid vh-100 p-0 d-flex flex-column font-sans" style={{backgroundColor: '#e9ecef'}}>
+        <div className="container-fluid vh-100 p-0 d-flex flex-column font-sans bg-light">
             
             {/* HEADER */}
-            <header className="bg-dark text-white px-4 py-2 d-flex justify-content-between align-items-center shadow-sm" style={{height: '60px'}}>
+            <header className="bg-white px-4 py-3 border-bottom shadow-sm d-flex justify-content-between align-items-center" style={{height: '70px'}}>
                 <div className="d-flex align-items-center gap-2">
-                    <i className="bi bi-grid-3x3-gap-fill fs-4"></i>
-                    <h5 className="m-0 fw-bold text-uppercase" style={{letterSpacing: '2px'}}>Pedidos Internos (Cocina)</h5>
+                    <h4 className="m-0 fw-bold text-primary">Pedidos</h4>
                 </div>
                 <div className="d-flex align-items-center gap-3">
                     <div className="d-none d-md-block text-end lh-1">
-                         <small className="d-block text-muted" style={{fontSize: '0.7rem'}}>FECHA</small>
-                         <span className="font-monospace">{new Date().toLocaleDateString()}</span>
+                         <small className="d-block text-muted" style={{fontSize: '0.75rem'}}>FECHA</small>
+                         <span className="fw-semibold text-dark">{new Date().toLocaleDateString()}</span>
                     </div>
-                    <span className="badge bg-white text-dark rounded-0 animate__animated animate__pulse animate__infinite">
-                        ● EN VIVO
+                    <span className="badge bg-dark text-warning border border-success rounded-pill px-3 py-2 animate__animated animate__pulse animate__infinite">
+                        ● En Vivo
                     </span>
                 </div>
             </header>
 
             <div className="row g-0 flex-grow-1 overflow-hidden">
+                
                 {/* COLUMNA PENDIENTES */}
-                <div className="col-md-7 col-lg-8 h-100 d-flex flex-column border-end border-secondary">
-                    <div className="bg-white p-2 border-bottom border-dark d-flex justify-content-between align-items-center">
-                        <h6 className="fw-bold text-dark m-0 ps-2 text-uppercase">
-                            <i className="bi bi-hourglass-split me-2"></i> Pendientes ({pendientes.length})
-                        </h6>
+                <div className="col-md-7 col-lg-8 h-100 d-flex flex-column border-end bg-light">
+                    <div className="p-3 d-flex justify-content-between align-items-center">
+                        <h5 className="fw-bold text-dark m-0 d-flex align-items-center">
+                            <span className="badge bg-primary rounded-circle me-2">{pendientes.length}</span>
+                            Pendientes
+                        </h5>
                     </div>
                     
-                    <div className="flex-grow-1 overflow-auto p-3" style={{backgroundColor: '#dee2e6'}}>
+                    <div className="flex-grow-1 overflow-auto px-3 pb-4">
                         {pendientes.length === 0 ? (
-                            <div className="h-100 d-flex flex-column justify-content-center align-items-center text-muted">
-                                <i className="bi bi-inbox fs-1 mb-2"></i>
-                                <h4 className="fw-light">Sin pedidos pendientes</h4>
+                            <div className="h-100 d-flex flex-column justify-content-center align-items-center text-muted opacity-50">
+                                <i className="bi bi-cup-hot fs-1 mb-3"></i>
+                                <h5 className="fw-normal">Todo listo por aquí</h5>
                             </div>
                         ) : (
-                            <div className="row">
+                            <div className="row g-3">
                                 {pendientes.map(p => (
                                     <div key={p.id} className="col-12 col-xl-6">
                                         <PedidoCard venta={p} esPendiente={true} />
@@ -227,15 +227,19 @@ export default function PedidosInternos() {
                 </div>
 
                 {/* COLUMNA TERMINADOS */}
-                <div className="col-md-5 col-lg-4 h-100 d-flex flex-column bg-light">
-                    <div className="bg-secondary text-white p-2 border-bottom border-white d-flex justify-content-between align-items-center">
-                        <h6 className="fw-bold m-0 ps-2 text-uppercase">
-                            <i className="bi bi-check-circle me-2"></i> Listos
+                <div className="col-md-5 col-lg-4 h-100 d-flex flex-column bg-white">
+                    <div className="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
+                        <h6 className="fw-bold text-success m-0 ps-2 text-uppercase">
+                            <i className="bi bi-check-circle-fill me-2"></i> Listos
                         </h6>
                     </div>
 
                     <div className="flex-grow-1 overflow-auto p-3">
-                         {terminados.map(p => <PedidoCard key={p.id} venta={p} esPendiente={false} />)}
+                         {terminados.length === 0 ? (
+                             <p className="text-center text-muted mt-5 small">No hay pedidos completados recientes.</p>
+                         ) : (
+                             terminados.map(p => <PedidoCard key={p.id} venta={p} esPendiente={false} />)
+                         )}
                     </div>
                 </div>
             </div>

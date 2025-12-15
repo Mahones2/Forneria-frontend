@@ -34,6 +34,10 @@ export default function Ventas() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedVenta, setSelectedVenta] = useState(null);
 
+    // --- NUEVO: ESTADOS DE PAGINACIÓN ---
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(50); // Cantidad de ventas por página
+
     // FUNCIÓN PARA ABRIR EL MODAL
     const handleOpenModal = (venta) => {
         setSelectedVenta(venta);
@@ -64,7 +68,9 @@ export default function Ventas() {
 
         try {
             const { data } = await client.get("/pos/api/ventas/", config);
-            setVentas(data); 
+            // Ordenamos por ID descendente (opcional, para ver las nuevas primero)
+            // Si el backend ya lo hace, puedes quitar el .sort
+            setVentas(data.sort((a, b) => b.id - a.id)); 
 
         } catch (err) {
             console.error("Error al cargar ventas:", err.response?.data || err);
@@ -78,6 +84,16 @@ export default function Ventas() {
         loadVentas();
     }, []);
 
+    // --- LÓGICA DE CORTE PARA PAGINACIÓN ---
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = ventas.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(ventas.length / itemsPerPage);
+
+    // Cambiar de página
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+
     if (loading) return <Loader />;
     if (error) {
         Swal.fire({
@@ -87,66 +103,95 @@ export default function Ventas() {
             confirmButtonColor: '#d33'
         });
 
-        return null; // evita que el componente siga renderizando
+        return null; 
     }
 
 
     return (
         <div className="container mt-4">
-            <h2 className="mb-4">Historial Completo de Ventas</h2>
+            <h2 className="mb-4 text-primary fw-bold">Historial de Ventas</h2>
             
             {ventas.length === 0 ? (
                 <div className="alert alert-info">No hay ventas registradas en el historial.</div>
             ) : (
-                <div className="table-responsive">
-                    <table className="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Fecha y Hora</th> 
-                                <th>Cliente</th>
-                                <th className="text-end">Total</th>
-                                <th>Estado</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {ventas.map((venta) => {
-                                const estadoInfo = ESTADO_DISPLAY[venta.estado] || { text: 'Desconocido', variant: 'secondary' };
-                                
-                                const fechaHora = new Date(venta.fecha).toLocaleString("es-CL", { 
-                                    day: '2-digit', 
-                                    month: '2-digit', 
-                                    year: 'numeric', 
-                                    hour: '2-digit', 
-                                    minute: '2-digit' 
-                                });
+                <>
+                    {/* Contenedor responsivo con scroll horizontal si es necesario */}
+                    <div className="table-responsive shadow-sm rounded bg-white">
+                        <table className="table table-striped table-hover align-middle mb-0 text-nowrap">
+                            <thead className="table-primary">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Fecha y Hora</th> 
+                                    <th>Cliente</th>
+                                    <th className="text-end">Total</th>
+                                    <th>Estado</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {/* Usamos currentItems en lugar de ventas */}
+                                {currentItems.map((venta) => {
+                                    const estadoInfo = ESTADO_DISPLAY[venta.estado] || { text: 'Desconocido', variant: 'secondary' };
+                                    
+                                    const fechaHora = new Date(venta.fecha).toLocaleString("es-CL", { 
+                                        day: '2-digit', 
+                                        month: '2-digit', 
+                                        year: 'numeric', 
+                                        hour: '2-digit', 
+                                        minute: '2-digit' 
+                                    });
 
-                                return (
-                                    <tr key={venta.id}>
-                                        <td>{venta.id}</td>
-                                        <td>{fechaHora}</td> 
-                                        <td>{venta.cliente_nombre || 'Consumidor Final'} <br/> 
-                                            <small className="text-muted">Vendida por: {venta.vendedor_nombre || 'N/A'}</small>
-                                        </td> 
-                                        <td className="text-end fw-bold">{formatCurrency(venta.total)}</td>
-                                        <td>
-                                            <span className={`badge bg-${estadoInfo.variant}`}>{estadoInfo.text}</span>
-                                        </td>
-                                        <td>
-                                            <button 
-                                                onClick={() => handleOpenModal(venta)} 
-                                                className="btn btn-sm btn-outline-primary"
-                                            >
-                                                Ver Detalle Completo
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                                    return (
+                                        <tr key={venta.id}>
+                                            <td className="fw-bold">#{venta.id}</td>
+                                            <td>{fechaHora}</td> 
+                                            <td>{venta.cliente_nombre || 'Consumidor Final'} <br/> 
+                                                <small className="text-muted" style={{fontSize: '0.75rem'}}>Vendida por: {venta.vendedor_nombre || 'N/A'}</small>
+                                            </td> 
+                                            <td className="text-end fw-bold text-success">{formatCurrency(venta.total)}</td>
+                                            <td>
+                                                <span className={`badge bg-${estadoInfo.variant}`}>{estadoInfo.text}</span>
+                                            </td>
+                                            <td>
+                                                <button 
+                                                    onClick={() => handleOpenModal(venta)} 
+                                                    className="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                                >
+                                                    Ver Detalle
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* --- CONTROLES DE PAGINACIÓN --- */}
+                    {totalPages > 1 && (
+                        <div className="d-flex justify-content-center justify-content-md-end align-items-center mt-3 gap-2">
+                            <button 
+                                className="btn btn-outline-secondary btn-sm"
+                                onClick={() => paginate(currentPage - 1)}
+                                disabled={currentPage === 1}
+                            >
+                                <i className="bi bi-chevron-left"></i> Anterior
+                            </button>
+                            
+                            <span className="text-muted small mx-2">
+                                Página <strong>{currentPage}</strong> de <strong>{totalPages}</strong>
+                            </span>
+
+                            <button 
+                                className="btn btn-outline-secondary btn-sm"
+                                onClick={() => paginate(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                            >
+                                Siguiente <i className="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    )}
+                </>
             )}
 
             {isModalOpen && selectedVenta && (
@@ -176,8 +221,8 @@ function DetalleVentaModal({ venta, onClose, formatCurrency }) {
     
     // Preparación de datos del cliente (Adaptación aquí)
     const clienteNombreDisplay = venta.cliente_nombre || 'Consumidor Final';
-    const clienteRutDisplay = venta.cliente_rut; // Asumimos que el backend puede enviar este campo
-    const clienteEmailDisplay = venta.cliente_email; // O este
+    const clienteRutDisplay = venta.cliente_rut; 
+    const clienteEmailDisplay = venta.cliente_email; 
 
     return (
         // Estructura básica de un modal Bootstrap. 
@@ -186,9 +231,9 @@ function DetalleVentaModal({ venta, onClose, formatCurrency }) {
             style={{ display: 'block', backgroundColor: 'rgba(0, 0, 0, 0.5)' }} 
             tabIndex="-1" 
             role="dialog"
-            onClick={onClose} // Cerrar al hacer clic fuera
+            onClick={onClose} 
         >
-            <div className="modal-dialog modal-xl" role="document" onClick={e => e.stopPropagation()}>
+            <div className="modal-dialog modal-xl modal-dialog-scrollable" role="document" onClick={e => e.stopPropagation()}>
                 <div className="modal-content">
                     <div className="modal-header bg-primary text-white">
                         <h5 className="modal-title">Detalle Completo Venta #{venta.id}</h5>
@@ -202,7 +247,6 @@ function DetalleVentaModal({ venta, onClose, formatCurrency }) {
                                 <ul className="list-unstyled">
                                     <li><strong>Fecha/Hora:</strong> {fechaHora}</li>
                                     
-                                    {/* --- AQUÍ LA ADAPTACIÓN --- */}
                                     <li className="fw-bold mt-2">Cliente: {clienteNombreDisplay}</li>
                                     
                                     {clienteRutDisplay && (
@@ -211,7 +255,6 @@ function DetalleVentaModal({ venta, onClose, formatCurrency }) {
                                     {clienteEmailDisplay && (
                                         <li><strong>Email:</strong> {clienteEmailDisplay}</li>
                                     )}
-                                    {/* ------------------------- */}
                                     
                                     <li><strong>Vendedor:</strong> {venta.vendedor_nombre || 'N/A'}</li>
                                     <li><strong>Canal:</strong> {venta.canal_venta === 'pos' ? 'Punto de Venta' : 'E-commerce'}</li>
@@ -245,10 +288,9 @@ function DetalleVentaModal({ venta, onClose, formatCurrency }) {
                         <hr />
 
                         <h4 className="mt-4 mb-3">Productos Vendidos ({productosVendidos.length})</h4>
-                        {/* ... (Contenido de Productos Vendidos se mantiene igual) ... */}
                         {productosVendidos.length > 0 ? (
                             <div className="table-responsive">
-                                <table className="table table-bordered table-striped table-sm">
+                                <table className="table table-bordered table-striped table-sm text-nowrap">
                                     <thead>
                                         <tr>
                                             <th>Producto</th>
@@ -278,7 +320,6 @@ function DetalleVentaModal({ venta, onClose, formatCurrency }) {
                         <hr />
 
                         <h4 className="mt-4">Pagos Registrados ({pagosRegistrados.length})</h4>
-                        {/* ... (Contenido de Pagos Registrados se mantiene igual) ... */}
                         {pagosRegistrados.length > 0 ? (
                             <ul className="list-group list-group-flush">
                                 {pagosRegistrados.map((pago, index) => (

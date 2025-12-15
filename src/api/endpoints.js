@@ -4,11 +4,14 @@ export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export const endpoints = {
   // === AUTH === (Se mantiene igual)
+
   auth: {
-    login: '/api/auth/login/',
-    logout: '/api/auth/logout/',
-    tokenRefresh: '/api/auth/token/refresh/',
-    currentUser: '/api/user/',
+    // CORRECCIÓN: Agregamos /pos/ al inicio porque así quedó tu urls.py
+    login: '/pos/api/auth/login/', 
+    logout: '/pos/api/auth/logout/',
+    tokenRefresh: '/pos/api/auth/refresh/',
+    // Endpoint del empleado logueado
+    me: '/pos/me/', 
   },
 
   // =========================================================

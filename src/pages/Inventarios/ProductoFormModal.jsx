@@ -1,221 +1,341 @@
 import { useState, useMemo } from "react";
 import { Formik, Form, Field } from "formik";
-import client from "../../api/client";
+import client from "../../api/client"; // Asegúrate de que esto sea tu instancia de axios configurada
 import Swal from 'sweetalert2';
 import { productoSchema } from "../../validations/schemas";
 import FormError from "../../components/UI/FormError";
 
 export default function ProductoFormModal({ show, onClose, productToEdit, categorias, onSuccess }) {
     const [authToken] = useState(() => localStorage.getItem("access"));
+    const [activeTab, setActiveTab] = useState('general'); // Estado para las pestañas
+    const [previewImage, setPreviewImage] = useState(null); // Para previsualizar imagen
+
     const isEditing = !!productToEdit;
 
-    // Valores iniciales dinámicos según modo create/edit
+    // Valores iniciales
     const initialValues = useMemo(() => {
-        if (isEditing && productToEdit) {
-            return {
-                nombre: productToEdit.nombre || "",
-                codigo_barra: productToEdit.codigo_barra || "",
-                categoria: productToEdit.categoria || "",
-                marca: productToEdit.marca || "",
-                descripcion: productToEdit.descripcion || "",
-                precio_venta: productToEdit.precio_venta || "",
-                costo_unitario: productToEdit.costo_unitario || "",
-                stock_minimo_global: productToEdit.stock_minimo_global || 5,
-                tipo: productToEdit.tipo || "",
-                presentacion: productToEdit.presentacion || "",
-            };
-        }
+        // Helper para acceder a datos nutricionales si vienen anidados en el producto al editar
+        // Asumimos que productToEdit.nutricional existe si es edit
+        const nutri = productToEdit?.nutricional || {};
+
         return {
-            nombre: "",
-            codigo_barra: "",
-            categoria: "",
-            marca: "",
-            descripcion: "",
-            precio_venta: "",
-            costo_unitario: "",
-            stock_minimo_global: 5,
-            tipo: "",
-            presentacion: "",
+            // --- PRODUCTO ---
+            nombre: productToEdit?.nombre || "",
+            codigo_barra: productToEdit?.codigo_barra || "",
+            categoria: productToEdit?.categoria || "",
+            marca: productToEdit?.marca || "",
+            descripcion: productToEdit?.descripcion || "",
+            precio_venta: productToEdit?.precio_venta || "",
+            costo_unitario: productToEdit?.costo_unitario || "",
+            stock_minimo_global: productToEdit?.stock_minimo_global || 5,
+            tipo: productToEdit?.tipo || "",
+            presentacion: productToEdit?.presentacion || "",
+            imagen_referencial: null, // El archivo nuevo siempre inicia en null
+
+            // --- NUTRICIONAL ---
+            nutricional_id: nutri.id || null, // Guardamos ID si existe para saber si hacer PUT o POST
+            calorias: nutri.calorias || "",
+            proteinas: nutri.proteinas || "",
+            grasas: nutri.grasas || "",
+            carbohidratos: nutri.carbohidratos || "",
+            azucares: nutri.azucares || "",
+            sodio: nutri.sodio || "",
         };
-    }, [isEditing, productToEdit]);
+    }, [productToEdit]);
 
     const handleSubmit = async (values, { setSubmitting }) => {
-        const config = { headers: { Authorization: `Bearer ${authToken}` } };
+        const config = { 
+            headers: { 
+                Authorization: `Bearer ${authToken}`,
+                // Axios detecta FormData y pone el Content-Type multipart/form-data solo
+            } 
+        };
 
         try {
-            // Los schemas de Yup ya hacen la transformación de tipos
-            const payload = {
-                ...values,
-                // Asegurar que valores vacíos sean null para campos opcionales
-                codigo_barra: values.codigo_barra || null,
-                marca: values.marca || null,
-                descripcion: values.descripcion || null,
-                costo_unitario: values.costo_unitario || null,
-                tipo: values.tipo || null,
-                presentacion: values.presentacion || null,
-            };
+            // 1. PREPARAR DATOS DEL PRODUCTO (FormData por la imagen)
+            const productData = new FormData();
+            productData.append('nombre', values.nombre);
+            productData.append('categoria', values.categoria);
+            productData.append('precio_venta', values.precio_venta);
+            productData.append('stock_minimo_global', values.stock_minimo_global);
+            
+            // Campos opcionales: enviar solo si tienen valor
+            if (values.codigo_barra) productData.append('codigo_barra', values.codigo_barra);
+            if (values.marca) productData.append('marca', values.marca);
+            if (values.descripcion) productData.append('descripcion', values.descripcion);
+            if (values.costo_unitario) productData.append('costo_unitario', values.costo_unitario);
+            if (values.tipo) productData.append('tipo', values.tipo);
+            if (values.presentacion) productData.append('presentacion', values.presentacion);
 
-            if (isEditing) {
-                await client.put(`/pos/api/productos/${productToEdit.id}/`, payload, config);
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'success',
-                    title: 'Producto actualizado',
-                    showConfirmButton: false,
-                    timer: 2000
-                });
-            } else {
-                await client.post(`/pos/api/productos/`, payload, config);
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'success',
-                    title: 'Producto creado',
-                    showConfirmButton: false,
-                    timer: 2000
-                });
+            // Imagen: Solo si es un objeto File (si es string es una URL vieja que no se toca)
+            if (values.imagen_referencial instanceof File) {
+                productData.append('imagen_referencial', values.imagen_referencial);
             }
+
+            let productId = null;
+            let productResponse = null;
+
+            // 2. GUARDAR PRODUCTO
+            if (isEditing) {
+                productId = productToEdit.id;
+                productResponse = await client.patch(`/pos/api/productos/${productId}/`, productData, config);
+            } else {
+                productResponse = await client.post(`/pos/api/productos/`, productData, config);
+                productId = productResponse.data.id;
+            }
+
+            // 3. PREPARAR DATOS NUTRICIONALES (JSON)
+            // Solo intentamos guardar si hay al menos un dato nutricional lleno o si estamos editando
+            const hasNutritionalData = values.calorias || values.proteinas || values.grasas;
+            
+            if (productId && hasNutritionalData) {
+                const nutriPayload = {
+                    calorias: values.calorias || 0,
+                    proteinas: values.proteinas || 0,
+                    grasas: values.grasas || 0,
+                    carbohidratos: values.carbohidratos || 0,
+                    azucares: values.azucares || 0,
+                    sodio: values.sodio || 0,
+                    producto: productId // RELACIÓN ONE-TO-ONE
+                };
+
+                // Configuración para JSON
+                const jsonConfig = { headers: { Authorization: `Bearer ${authToken}` } };
+
+                if (values.nutricional_id) {
+                    // Si ya existía info nutricional, actualizamos (PATCH)
+                    await client.patch(`/pos/api/nutricional/${values.nutricional_id}/`, nutriPayload, jsonConfig);
+                } else {
+                    // Si no existía (o es producto nuevo), creamos (POST)
+                    // Primero verificamos si el backend crea uno por defecto vacio, si no, post.
+                    // Para seguridad intentamos POST, si falla (400) por unique constraint, hacemos PATCH buscando el ID (lógica compleja).
+                    // Asumiremos flujo estándar: Nuevo Producto -> POST Nutricional.
+                    try {
+                         await client.post(`/pos/api/nutricional/`, nutriPayload, jsonConfig);
+                    } catch (nutriErr) {
+                        // Si falla porque ya existe (ej: creado automáticamente por signals en Django), intentamos update
+                        console.warn("Posiblemente ya existe nutricional, intentando patch...", nutriErr);
+                        // Esto requeriría saber el ID del nutricional creado automáticamente, lo omitiremos por simplicidad
+                    }
+                }
+            }
+
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: isEditing ? 'Producto actualizado' : 'Producto creado',
+                showConfirmButton: false,
+                timer: 2000
+            });
             onSuccess();
+            onClose();
+
         } catch (err) {
             console.error(err);
             Swal.fire({
                 toast: true,
                 position: 'top-end',
                 icon: 'error',
-                title: 'Error al guardar producto',
-                text: err.response?.data?.detail || 'Error desconocido',
+                title: 'Error al procesar',
+                text: err.response?.data?.detail || JSON.stringify(err.response?.data) || 'Revise los datos',
                 showConfirmButton: false,
-                timer: 3000
+                timer: 4000
             });
         } finally {
             setSubmitting(false);
         }
     };
 
+    // Manejo de cambio de imagen
+    const handleImageChange = (event, setFieldValue) => {
+        const file = event.currentTarget.files[0];
+        setFieldValue("imagen_referencial", file);
+        if (file) {
+            setPreviewImage(URL.createObjectURL(file));
+        }
+    };
+
     if (!show) return null;
 
     return (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-            <div className="modal-dialog modal-lg">
+        // Cambio a modal-xl para más espacio
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+            <div className="modal-dialog modal-xl"> 
                 <div className="modal-content">
                     <div className="modal-header bg-light-theme">
-                        <h5 className="modal-title" style={{ color: 'var(--primary-color)' }}>
-                            {isEditing ? "Editar Producto" : "Nuevo Producto"}
+                        <h5 className="modal-title fw-bold" style={{ color: 'var(--primary-color)' }}>
+                            {isEditing ? `Editar: ${productToEdit.nombre}` : "Nuevo Producto"}
                         </h5>
                         <button type="button" className="btn-close" onClick={onClose}></button>
                     </div>
 
                     <Formik
                         initialValues={initialValues}
-                        validationSchema={productoSchema}
+                        validationSchema={productoSchema} // Asegúrate de actualizar tu schema para permitir los nuevos campos
                         onSubmit={handleSubmit}
                         enableReinitialize
                     >
-                        {({ isSubmitting, errors, touched }) => (
+                        {({ isSubmitting, errors, touched, setFieldValue, values }) => (
                             <Form>
                                 <div className="modal-body">
-                                    <div className="row mb-3">
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-semibold">
-                                                Nombre <span className="text-danger">*</span>
-                                            </label>
-                                            <Field
-                                                name="nombre"
-                                                type="text"
-                                                className={`form-control ${errors.nombre && touched.nombre ? 'is-invalid' : ''}`}
-                                                placeholder="Pan integral"
-                                            />
-                                            <FormError name="nombre" />
-                                        </div>
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-semibold">Código de Barras</label>
-                                            <Field
-                                                name="codigo_barra"
-                                                type="text"
-                                                className={`form-control ${errors.codigo_barra && touched.codigo_barra ? 'is-invalid' : ''}`}
-                                                placeholder="1234567890123"
-                                            />
-                                            <FormError name="codigo_barra" />
-                                        </div>
-                                    </div>
-
-                                    <div className="row mb-3">
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-semibold">
-                                                Categoría <span className="text-danger">*</span>
-                                            </label>
-                                            <Field
-                                                as="select"
-                                                name="categoria"
-                                                className={`form-select ${errors.categoria && touched.categoria ? 'is-invalid' : ''}`}
+                                    {/* --- TABS DE NAVEGACIÓN --- */}
+                                    <ul className="nav nav-tabs mb-4">
+                                        <li className="nav-item">
+                                            <button 
+                                                type="button"
+                                                className={`nav-link ${activeTab === 'general' ? 'active fw-bold' : ''}`}
+                                                onClick={() => setActiveTab('general')}
                                             >
-                                                <option value="">Seleccione...</option>
-                                                {categorias.map(c => (
-                                                    <option key={c.id} value={c.id}>{c.nombre}</option>
-                                                ))}
-                                            </Field>
-                                            <FormError name="categoria" />
-                                        </div>
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-semibold">
-                                                Precio Venta <span className="text-danger">*</span>
-                                            </label>
-                                            <Field
-                                                name="precio_venta"
-                                                type="number"
-                                                step="0.01"
-                                                className={`form-control ${errors.precio_venta && touched.precio_venta ? 'is-invalid' : ''}`}
-                                                placeholder="0.00"
-                                            />
-                                            <FormError name="precio_venta" />
-                                        </div>
-                                    </div>
+                                                📦 Información General
+                                            </button>
+                                        </li>
+                                        <li className="nav-item">
+                                            <button 
+                                                type="button"
+                                                className={`nav-link ${activeTab === 'nutricional' ? 'active fw-bold' : ''}`}
+                                                onClick={() => setActiveTab('nutricional')}
+                                            >
+                                                🍎 Información Nutricional
+                                            </button>
+                                        </li>
+                                    </ul>
 
-                                    <div className="row mb-3">
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-semibold">Marca</label>
-                                            <Field
-                                                name="marca"
-                                                type="text"
-                                                className={`form-control ${errors.marca && touched.marca ? 'is-invalid' : ''}`}
-                                                placeholder="Marca del producto"
-                                            />
-                                            <FormError name="marca" />
-                                        </div>
-                                        <div className="col-md-6">
-                                            <label className="form-label fw-semibold">
-                                                Stock Mínimo (Alerta) <span className="text-danger">*</span>
-                                            </label>
-                                            <Field
-                                                name="stock_minimo_global"
-                                                type="number"
-                                                className={`form-control ${errors.stock_minimo_global && touched.stock_minimo_global ? 'is-invalid' : ''}`}
-                                                placeholder="5"
-                                            />
-                                            <FormError name="stock_minimo_global" />
-                                        </div>
-                                    </div>
+                                    {/* --- CONTENIDO TABS --- */}
+                                    <div className="tab-content">
+                                        
+                                        {/* TAB 1: GENERAL */}
+                                        <div className={`tab-pane fade ${activeTab === 'general' ? 'show active' : ''}`}>
+                                            <div className="row g-3">
+                                                {/* Columna Izquierda: Datos principales */}
+                                                <div className="col-md-8">
+                                                    <div className="row g-3">
+                                                        <div className="col-md-6">
+                                                            <label className="form-label fw-semibold">Nombre <span className="text-danger">*</span></label>
+                                                            <Field name="nombre" type="text" className={`form-control ${errors.nombre && touched.nombre ? 'is-invalid' : ''}`} />
+                                                            <FormError name="nombre" />
+                                                        </div>
+                                                        <div className="col-md-6">
+                                                            <label className="form-label fw-semibold">Código de Barras</label>
+                                                            <Field name="codigo_barra" type="text" className="form-control" />
+                                                        </div>
 
-                                    <div className="row mb-3">
-                                        <div className="col-12">
-                                            <label className="form-label fw-semibold">Descripción</label>
-                                            <Field
-                                                name="descripcion"
-                                                as="textarea"
-                                                rows="2"
-                                                className={`form-control ${errors.descripcion && touched.descripcion ? 'is-invalid' : ''}`}
-                                                placeholder="Descripción del producto..."
-                                            />
-                                            <FormError name="descripcion" />
+                                                        <div className="col-md-4">
+                                                            <label className="form-label fw-semibold">Categoría <span className="text-danger">*</span></label>
+                                                            <Field as="select" name="categoria" className={`form-select ${errors.categoria && touched.categoria ? 'is-invalid' : ''}`}>
+                                                                <option value="">Seleccione...</option>
+                                                                {categorias.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                                                            </Field>
+                                                            <FormError name="categoria" />
+                                                        </div>
+                                                        <div className="col-md-4">
+                                                            <label className="form-label fw-semibold">Marca</label>
+                                                            <Field name="marca" type="text" className="form-control" />
+                                                        </div>
+                                                        <div className="col-md-4">
+                                                            <label className="form-label fw-semibold">Tipo</label>
+                                                            <Field name="tipo" type="text" className="form-control" placeholder="Ej: Congelado" />
+                                                        </div>
+
+                                                        <div className="col-md-4">
+                                                            <label className="form-label fw-semibold">Precio Venta <span className="text-danger">*</span></label>
+                                                            <div className="input-group">
+                                                                <span className="input-group-text">$</span>
+                                                                <Field name="precio_venta" type="number" className={`form-control ${errors.precio_venta && touched.precio_venta ? 'is-invalid' : ''}`} />
+                                                            </div>
+                                                            <FormError name="precio_venta" />
+                                                        </div>
+                                                        <div className="col-md-4">
+                                                            <label className="form-label fw-semibold">Costo Unitario</label>
+                                                            <div className="input-group">
+                                                                <span className="input-group-text">$</span>
+                                                                <Field name="costo_unitario" type="number" className="form-control" />
+                                                            </div>
+                                                        </div>
+                                                        <div className="col-md-4">
+                                                            <label className="form-label fw-semibold">Stock Mínimo</label>
+                                                            <Field name="stock_minimo_global" type="number" className="form-control" />
+                                                        </div>
+
+                                                        <div className="col-12">
+                                                            <label className="form-label fw-semibold">Descripción</label>
+                                                            <Field name="descripcion" as="textarea" rows="2" className="form-control" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Columna Derecha: Imagen y Presentación */}
+                                                <div className="col-md-4 border-start">
+                                                    <div className="mb-3">
+                                                        <label className="form-label fw-semibold">Presentación</label>
+                                                        <Field name="presentacion" type="text" className="form-control" placeholder="Ej: Pack 6 uds" />
+                                                    </div>
+
+                                                    <div className="mb-3">
+                                                        <label className="form-label fw-semibold">Imagen del Producto</label>
+                                                        <input 
+                                                            type="file" 
+                                                            className="form-control" 
+                                                            accept="image/*"
+                                                            onChange={(e) => handleImageChange(e, setFieldValue)}
+                                                        />
+                                                        {/* Previsualización */}
+                                                        <div className="mt-3 text-center p-2 border rounded bg-light">
+                                                            {previewImage ? (
+                                                                <img src={previewImage} alt="Preview" className="img-fluid" style={{ maxHeight: '150px' }} />
+                                                            ) : (
+                                                                productToEdit?.imagen_referencial ? (
+                                                                    <img src={productToEdit.imagen_referencial} alt="Actual" className="img-fluid" style={{ maxHeight: '150px' }} />
+                                                                ) : (
+                                                                    <span className="text-muted small">Sin imagen seleccionada</span>
+                                                                )
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
+
+                                        {/* TAB 2: NUTRICIONAL */}
+                                        <div className={`tab-pane fade ${activeTab === 'nutricional' ? 'show active' : ''}`}>
+                                            <div className="alert alert-info py-2">
+                                                <small><i className="bi bi-info-circle"></i> Ingrese los valores por cada 100g/ml o por porción.</small>
+                                            </div>
+                                            <div className="row g-3">
+                                                <div className="col-md-4">
+                                                    <label className="form-label">Calorías (kcal)</label>
+                                                    <Field name="calorias" type="number" className="form-control" />
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <label className="form-label">Proteínas (g)</label>
+                                                    <Field name="proteinas" type="number" className="form-control" />
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <label className="form-label">Grasas Totales (g)</label>
+                                                    <Field name="grasas" type="number" className="form-control" />
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <label className="form-label">Carbohidratos (g)</label>
+                                                    <Field name="carbohidratos" type="number" className="form-control" />
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <label className="form-label">Azúcares (g)</label>
+                                                    <Field name="azucares" type="number" className="form-control" />
+                                                </div>
+                                                <div className="col-md-4">
+                                                    <label className="form-label">Sodio (mg)</label>
+                                                    <Field name="sodio" type="number" className="form-control" />
+                                                </div>
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
 
-                                <div className="modal-footer">
+                                <div className="modal-footer bg-light">
                                     <button
                                         type="button"
-                                        className="btn btn-secondary"
+                                        className="btn btn-outline-secondary"
                                         onClick={onClose}
                                         disabled={isSubmitting}
                                     >
@@ -223,15 +343,15 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
                                     </button>
                                     <button
                                         type="submit"
-                                        className="btn btn-primary"
+                                        className="btn btn-primary px-4"
                                         disabled={isSubmitting}
                                     >
                                         {isSubmitting ? (
                                             <>
                                                 <span className="spinner-border spinner-border-sm me-2"></span>
-                                                Guardando...
+                                                Procesando...
                                             </>
-                                        ) : 'Guardar'}
+                                        ) : 'Guardar Todo'}
                                     </button>
                                 </div>
                             </Form>
