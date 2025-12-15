@@ -141,7 +141,19 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
 
             // Imagen: Solo si es un objeto File válido
             if (values.imagen_url && values.imagen_url instanceof File && values.imagen_url.size > 0) {
-                productData.append('imagen_url', values.imagen_url);
+                console.log('📤 Agregando imagen a FormData:', values.imagen_url.name, values.imagen_url.type);
+                // El backend espera el campo como 'imagen', no 'imagen_url'
+                productData.append('imagen', values.imagen_url);
+            }
+
+            // Log de todo el FormData antes de enviar
+            console.log('📦 FormData a enviar:');
+            for (let [key, value] of productData.entries()) {
+                if (value instanceof File) {
+                    console.log(`  ${key}: [File] ${value.name} (${value.size} bytes)`);
+                } else {
+                    console.log(`  ${key}: ${value}`);
+                }
             }
 
             let productId = null;
