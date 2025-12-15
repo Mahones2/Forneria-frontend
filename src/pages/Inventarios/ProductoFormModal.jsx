@@ -122,14 +122,14 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
             productData.append('precio_venta', values.precio_venta);
             productData.append('stock_minimo_global', values.stock_minimo_global);
             
-            // Adjuntar etiquetas (asegurar que siempre sea un array)
+            // Adjuntar etiquetas como array JSON string
             const etiquetasArray = Array.isArray(values.etiquetas) ? values.etiquetas : (values.etiquetas ? [values.etiquetas] : []);
+            // Solo enviar si hay etiquetas seleccionadas
             if (etiquetasArray.length > 0) {
-                etiquetasArray.forEach(tagId => {
-                    productData.append('etiquetas', parseInt(tagId, 10));
+                etiquetasArray.forEach((tagId, index) => {
+                    productData.append(`etiquetas[${index}]`, parseInt(tagId, 10));
                 });
             }
-            // Si no hay etiquetas, simplemente no agregamos nada al FormData
             
             // Campos opcionales: enviar solo si tienen valor
             if (values.codigo_barra) productData.append('codigo_barra', values.codigo_barra);
