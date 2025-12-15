@@ -141,10 +141,7 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
 
             // Imagen: Solo si es un objeto File válido
             if (values.imagen_url && values.imagen_url instanceof File && values.imagen_url.size > 0) {
-                console.log('Enviando imagen:', values.imagen_url.name, values.imagen_url.size, 'bytes');
                 productData.append('imagen_url', values.imagen_url);
-            } else {
-                console.log('No se envía imagen. Valor:', values.imagen_url);
             }
 
             let productId = null;

@@ -743,10 +743,13 @@ function POS() {
                                         >
                                             <div className="p-2 text-center">
                                                 <img
-                                                    src={prod.imagen_url}
+                                                    src={prod.imagen_url || 'https://via.placeholder.com/100x100?text=Sin+Imagen'}
                                                     alt={prod.nombre}
                                                     className="img-fluid rounded"
                                                     style={{ maxHeight: "100px", objectFit: "contain" }}
+                                                    onError={(e) => {
+                                                        e.target.src = 'https://via.placeholder.com/100x100?text=Sin+Imagen';
+                                                    }}
                                                 />
                                             </div>
 
