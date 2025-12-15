@@ -139,9 +139,12 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
             if (values.tipo) productData.append('tipo', values.tipo);
             if (values.presentacion) productData.append('presentacion', values.presentacion);
 
-            // Imagen: Solo si es un objeto File (si es string es una URL vieja que no se toca)
-            if (values.imagen_url instanceof File) {
+            // Imagen: Solo si es un objeto File válido
+            if (values.imagen_url && values.imagen_url instanceof File && values.imagen_url.size > 0) {
+                console.log('Enviando imagen:', values.imagen_url.name, values.imagen_url.size, 'bytes');
                 productData.append('imagen_url', values.imagen_url);
+            } else {
+                console.log('No se envía imagen. Valor:', values.imagen_url);
             }
 
             let productId = null;
@@ -222,8 +225,8 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
     // Manejo de cambio de imagen
     const handleImageChange = (event, setFieldValue) => {
         const file = event.currentTarget.files[0];
-        setFieldValue("imagen_url", file);
         if (file) {
+            setFieldValue("imagen_url", file);
             setPreviewImage(URL.createObjectURL(file));
         }
     };
