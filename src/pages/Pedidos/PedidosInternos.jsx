@@ -48,9 +48,10 @@ export default function PedidosInternos() {
 
     useEffect(() => {
         fetchPedidos(); 
-        const intervalo = setInterval(() => { fetchPedidos(true); }, 15000);
+        const intervalo = setInterval(() => { fetchPedidos(true); }, 30000); // Cambio a 30 segundos
         return () => clearInterval(intervalo); 
-    }, [fetchPedidos]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Solo ejecutar al montar el componente
 
     const marcarListo = async (idVenta) => {
         try {
@@ -63,7 +64,7 @@ export default function PedidosInternos() {
                 icon: 'success', title: 'PEDIDO LISTO',
                 toast: true, position: 'top-end', showConfirmButton: false, timer: 1500,
             });
-            fetchPedidos(true); 
+            // Removido fetchPedidos(true) - el estado ya se actualiza localmente
         } catch (err) {
             Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
         }

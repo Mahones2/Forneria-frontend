@@ -157,7 +157,7 @@ function PedidoLanding() {
                 nombre: producto.nombre, 
                 precio_unitario: producto.precio_venta, 
                 cantidad: 1,
-                imagen: producto.imagen_referencial 
+                imagen: producto.imagen_url 
             }];
         });
     };
@@ -459,7 +459,7 @@ function PedidoLanding() {
                                                 </div>
                                             )}
                                             <img 
-                                                src={getImageUrl(prod.imagen_referencial)} 
+                                                src={getImageUrl(prod.imagen_url)} 
                                                 alt={prod.nombre} 
                                                 className="w-100 h-100" 
                                                 style={{objectFit: 'cover'}}

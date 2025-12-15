@@ -743,7 +743,7 @@ function POS() {
                                         >
                                             <div className="p-2 text-center">
                                                 <img
-                                                    src={prod.imagen_referencial}
+                                                    src={prod.imagen_url}
                                                     alt={prod.nombre}
                                                     className="img-fluid rounded"
                                                     style={{ maxHeight: "100px", objectFit: "contain" }}
