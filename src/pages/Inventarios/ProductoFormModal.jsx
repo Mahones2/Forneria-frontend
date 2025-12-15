@@ -127,10 +127,8 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
                 values.etiquetas.forEach(tagId => {
                     productData.append('etiquetas', tagId);
                 });
-            } else {
-                // Vaciar etiquetas si no hay ninguna seleccionada
-                productData.append('etiquetas', '');
             }
+            // Si no hay etiquetas, simplemente no agregamos nada al FormData
             
             // Campos opcionales: enviar solo si tienen valor
             if (values.codigo_barra) productData.append('codigo_barra', values.codigo_barra);
@@ -337,19 +335,24 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
 
                                                         <div className="col-12">
                                                             <label className="form-label fw-semibold">🏷️ Etiquetas del Producto</label>
-                                                            <Field 
-                                                                as="select" 
-                                                                name="etiquetas" 
-                                                                multiple 
+                                                            <select
+                                                                name="etiquetas"
+                                                                multiple
                                                                 className="form-select"
                                                                 style={{ height: '100px' }}
+                                                                value={values.etiquetas || []}
+                                                                onChange={(e) => {
+                                                                    const selectedOptions = Array.from(e.target.selectedOptions);
+                                                                    const selectedValues = selectedOptions.map(option => parseInt(option.value));
+                                                                    setFieldValue('etiquetas', selectedValues);
+                                                                }}
                                                             >
                                                                 {etiquetasDisponibles.map(e => (
                                                                     <option key={e.id} value={e.id}>
                                                                         {e.nombre}
                                                                     </option>
                                                                 ))}
-                                                            </Field>
+                                                            </select>
                                                             <small className="form-text text-muted">Mantén presionado Ctrl (o Cmd en Mac) para seleccionar múltiples etiquetas.</small>
                                                         </div>
                                                     </div>
