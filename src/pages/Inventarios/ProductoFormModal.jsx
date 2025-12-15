@@ -153,11 +153,18 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
             let productResponse = null;
 
             // 2. GUARDAR PRODUCTO
-            // Config con Authorization - sin Content-Type para que el navegador lo establezca automáticamente
+            // Config: Solo Authorization, NO tocar Content-Type para FormData
             const formConfig = {
                 headers: {
                     Authorization: `Bearer ${authToken}`,
-                }
+                },
+                // Forzar que Axios NO use JSON para FormData
+                transformRequest: [(data, headers) => {
+                    if (data instanceof FormData) {
+                        delete headers['Content-Type']; // Dejar que el navegador lo configure
+                    }
+                    return data;
+                }]
             };
 
             if (isEditing) {
@@ -221,15 +228,25 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
             onClose();
 
         } catch (err) {
-            console.error(err);
+            console.error('❌ Error completo:', err);
+            console.error('📋 Respuesta del backend:', err.response?.data);
+            
+            let errorMessage = 'Error desconocido';
+            if (err.response?.data) {
+                if (typeof err.response.data === 'string') {
+                    errorMessage = err.response.data;
+                } else if (err.response.data.detail) {
+                    errorMessage = err.response.data.detail;
+                } else {
+                    errorMessage = JSON.stringify(err.response.data, null, 2);
+                }
+            }
+            
             Swal.fire({
-                toast: true,
-                position: 'top-end',
                 icon: 'error',
                 title: 'Error al procesar',
-                text: err.response?.data?.detail || JSON.stringify(err.response?.data) || 'Revise los datos',
-                showConfirmButton: false,
-                timer: 4000
+                text: errorMessage,
+                showConfirmButton: true
             });
         } finally {
             setSubmitting(false);
