@@ -107,13 +107,6 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
     };
 
     const handleSubmit = async (values, { setSubmitting }) => {
-        const config = { 
-            headers: { 
-                Authorization: `Bearer ${authToken}`,
-                // Axios detecta FormData y pone el Content-Type multipart/form-data solo
-            } 
-        };
-
         try {
             // 1. PREPARAR DATOS DEL PRODUCTO (FormData por la imagen)
             const productData = new FormData();
@@ -122,12 +115,12 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
             productData.append('precio_venta', values.precio_venta);
             productData.append('stock_minimo_global', values.stock_minimo_global);
             
-            // Adjuntar etiquetas como array JSON string
+            // Adjuntar etiquetas - DRF espera múltiples campos con el mismo nombre
             const etiquetasArray = Array.isArray(values.etiquetas) ? values.etiquetas : (values.etiquetas ? [values.etiquetas] : []);
             // Solo enviar si hay etiquetas seleccionadas
             if (etiquetasArray.length > 0) {
-                etiquetasArray.forEach((tagId, index) => {
-                    productData.append(`etiquetas[${index}]`, parseInt(tagId, 10));
+                etiquetasArray.forEach(tagId => {
+                    productData.append('etiquetas', parseInt(tagId, 10));
                 });
             }
             
@@ -160,11 +153,18 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
             let productResponse = null;
 
             // 2. GUARDAR PRODUCTO
+            // Config con Authorization - sin Content-Type para que el navegador lo establezca automáticamente
+            const formConfig = {
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                }
+            };
+
             if (isEditing) {
                 productId = productToEdit.id;
-                productResponse = await client.patch(`/pos/api/productos/${productId}/`, productData, config);
+                productResponse = await client.patch(`/pos/api/productos/${productId}/`, productData, formConfig);
             } else {
-                productResponse = await client.post(`/pos/api/productos/`, productData, config);
+                productResponse = await client.post(`/pos/api/productos/`, productData, formConfig);
                 productId = productResponse.data.id;
             }
 
@@ -183,8 +183,13 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
                     producto: productId // RELACIÓN ONE-TO-ONE
                 };
 
-                // Configuración para JSON
-                const jsonConfig = { headers: { Authorization: `Bearer ${authToken}` } };
+                // Configuración para JSON (Content-Type: application/json)
+                const jsonConfig = { 
+                    headers: { 
+                        Authorization: `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    } 
+                };
 
                 if (values.nutricional_id) {
                     // Si ya existía info nutricional, actualizamos (PATCH)
