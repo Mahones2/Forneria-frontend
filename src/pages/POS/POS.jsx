@@ -37,7 +37,7 @@ function POS() {
     const [cart, setCart] = useState([]); 
     const [showMobileCart, setShowMobileCart] = useState(false);
     
-    // --- ESTADOS DE PAGINACIÓN (NUEVO) ---
+    // --- ESTADOS DE PAGINACIÓN ---
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(12); // Cantidad de productos por página
 
@@ -122,7 +122,7 @@ function POS() {
         fetchData();
     }, [fetchData]); 
 
-    // --- RESETEAR PÁGINA AL FILTRAR (IMPORTANTE) ---
+    // --- RESETEAR PÁGINA AL FILTRAR ---
     useEffect(() => {
         setCurrentPage(1);
     }, [buscar, categoriaSeleccionada, etiquetaSeleccionada]);
@@ -168,20 +168,16 @@ function POS() {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             const res = await client.get(`/pos/api/nutricional/?producto=${productoId}`, config);
             
-            // --- DEBUG: Descomenta esto para ver qué llega exactamente en la consola ---
             console.log("Respuesta Nutricional:", res.data); 
 
             let dataEncontrada = null;
 
-            // 1. Caso: Paginación de Django (tiene propiedad 'results')
             if (res.data.results && Array.isArray(res.data.results)) {
                 dataEncontrada = res.data.results.length > 0 ? res.data.results[0] : null;
             } 
-            // 2. Caso: Array directo (tu lógica original)
             else if (Array.isArray(res.data)) {
                 dataEncontrada = res.data.length > 0 ? res.data[0] : null;
             }
-            // 3. Caso: Objeto directo (si la API devolviera solo el item)
             else if (res.data && typeof res.data === 'object') {
                 dataEncontrada = res.data;
             }
@@ -509,8 +505,10 @@ function POS() {
 
     if (!authToken) return null; 
 
-    // COMPONENTE REUTILIZABLE PARA EL CONTENIDO DEL CARRITO
-    const CartContent = () => (
+    // !!! CORRECCIÓN PRINCIPAL AQUÍ !!!
+    // Cambiado de "const CartContent = () => (..." a "const renderCartContent = () => (..."
+    // Esto evita que React desmonte el input en cada renderizado.
+    const renderCartContent = () => (
         <div className="d-flex flex-column h-100">
              <div className="px-3 pb-2 border-bottom pt-3">
                 <h4 className="fw-bold"><i className="bi bi-cart4"></i> Venta</h4>
@@ -829,7 +827,7 @@ function POS() {
                             })}
                         </div>
 
-                        {/* --- CONTROLES DE PAGINACIÓN (NUEVO) --- */}
+                        {/* --- CONTROLES DE PAGINACIÓN --- */}
                         {totalPages > 1 && (
                             <div className="d-flex justify-content-center align-items-center mt-4 gap-2 pb-5">
                                 <button 
@@ -856,7 +854,8 @@ function POS() {
 
                 {/* --- COLUMNA DERECHA --- */}
                 <div className="d-none d-lg-block col-lg-3 bg-white border-start shadow h-100 overflow-hidden">
-                    <CartContent />
+                    {/* AQUÍ ESTÁ EL CAMBIO: Llamamos a la función directamente */}
+                    {renderCartContent()}
                 </div>
             </div>
 
@@ -878,7 +877,8 @@ function POS() {
                     <button type="button" className="btn-close btn-close-white" onClick={() => setShowMobileCart(false)}></button>
                 </div>
                 <div className="offcanvas-body p-0">
-                    <CartContent />
+                    {/* AQUÍ ESTÁ EL CAMBIO: Llamamos a la función directamente */}
+                    {renderCartContent()}
                 </div>
             </div>
              {showMobileCart && <div className="offcanvas-backdrop fade show" onClick={() => setShowMobileCart(false)}></div>}
