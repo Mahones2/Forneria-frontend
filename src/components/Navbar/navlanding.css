@@ -1,28 +1,55 @@
-/* Estilos Generales para Nav */
+/* --- Estilos Generales --- */
+.header {
+  background-color: #fff; /* Asegura fondo blanco */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Sombra suave para separar del contenido */
+  position: relative;
+  z-index: 1000; /* Asegura que el header esté sobre todo */
+  width: 100%;
+}
+
 .nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0; /* Ajusta tu padding según sea necesario */
+  padding: 1rem 0;
+  height: 80px; /* Definimos altura fija para calcular bien el menú móvil */
 }
 
-/* Estilos para el Menú (Escritorio por defecto) */
+.logo-img {
+  height: 50px; /* Ajusta el tamaño de tu logo */
+  width: auto;
+}
+
+/* --- Menú Escritorio (Default) --- */
 .nav-menu {
+  display: flex;
   list-style: none;
-  display: flex; /* Horizontal por defecto */
-  gap: 20px; /* Espacio entre los items */
+  gap: 25px;
+  align-items: center;
   margin: 0;
   padding: 0;
 }
 
-/* Ocultar el botón de hamburguesa por defecto (Escritorio) */
+.nav-menu li a, 
+.nav-menu li a:visited {
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav-menu li a:hover {
+  color: #f0ad4e; /* Color warning/naranja */
+}
+
+/* --- Botón Hamburguesa --- */
 .hamburger {
-  display: none;
-  background: none;
-  border: none;
+  display: none; /* Oculto en escritorio */
   cursor: pointer;
-  padding: 0;
-  z-index: 20; /* Asegura que esté por encima del menú desplegable */
+  background: transparent;
+  border: none;
+  z-index: 1001; /* IMPORTANTE: Debe estar por encima del menú desplegado */
+  padding: 10px;
 }
 
 .bar {
@@ -30,39 +57,55 @@
   width: 25px;
   height: 3px;
   margin: 5px auto;
-  -webkit-transition: all 0.3s ease-in-out;
+  background-color: #333;
   transition: all 0.3s ease-in-out;
-  background-color: #333; /* Color de las líneas */
+  border-radius: 2px;
 }
 
-/* --- Media Query para Móviles --- */
+/* --- Animación del Botón Hamburguesa (La X) --- */
+/* Cuando tiene la clase 'open' (añadida por React) */
+.hamburger .bar.open:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+.hamburger .bar.open:nth-child(2) {
+  opacity: 0; /* La línea del medio desaparece */
+}
+.hamburger .bar.open:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* --- Media Query: MÓVILES (max-width: 768px) --- */
 @media (max-width: 768px) {
-  /* Mostrar el botón de hamburguesa */
   .hamburger {
-    display: block;
+    display: block; /* Aparece el botón */
   }
 
-  /* El Menú en Móvil: Oculto por defecto */
   .nav-menu {
-    position: fixed; /* O absolute, dependiendo de tu diseño */
-    top: 60px; /* Ajusta esto a la altura de tu header */
-    left: 100%; /* Empieza fuera de la pantalla */
-    flex-direction: column; /* Vertical */
-    background-color: #fff; /* Fondo del menú desplegable */
-    width: 100%;
-    height: 100vh; /* Opcional: para que ocupe toda la altura */
+    position: fixed;
+    top: 0; 
+    left: -100%; /* Oculto a la izquierda */
+    flex-direction: column;
+    background-color: #ffffff; /* Fondo sólido */
+    width: 100%; /* Ocupa todo el ancho */
+    height: 100vh; /* Ocupa toda la altura */
+    justify-content: center; /* Centra los items verticalmente */
     text-align: center;
-    transition: all 0.3s ease;
-    z-index: 10;
+    transition: 0.3s ease-in-out; /* Animación suave */
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+    z-index: 999; /* Debajo del botón hamburguesa, pero sobre el contenido */
+    padding-top: 60px; /* Espacio para que no tape el logo si lo deseas */
+  }
+
+  /* Clase activa que añade React */
+  .nav-menu.active {
+    left: 0; /* Se desliza a la vista */
+  }
+
+  .nav-menu li {
+    margin: 25px 0;
   }
   
-  /* Mostrar el Menú cuando tiene la clase 'active' */
-  .nav-menu.active {
-    left: 0; /* Despliega el menú a la vista */
-  }
-
-  /* Estilos para los Items del menú en móvil */
-  .nav-menu li {
-    margin: 15px 0; /* Espacio vertical entre los items */
+  .nav-menu li a {
+    font-size: 1.2rem; /* Letra más grande en móvil */
   }
 }

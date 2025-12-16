@@ -277,10 +277,10 @@ function PedidoLanding() {
             items: cart.map(i => ({ producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio_unitario.toString() })), 
             pagos: pagosRealizados.map(p => ({ metodo: p.metodo, monto: p.monto.toString(), monto_recibido: p.monto_recibido.toString() }))
         };
-        console.log('📤 Enviando pedido:', ventaPayload);
+        console.log('Enviando pedido:', ventaPayload);
         try {
             const response = await client.post('/pos/api/kiosco/crear_pedido/', ventaPayload);
-            console.log('✅ Pedido creado:', response.data);
+            console.log('Pedido creado:', response.data);
             Swal.fire({
                 title: '¡Pedido Enviado!', 
                 text: 'Gracias por tu compra', 
@@ -295,7 +295,7 @@ function PedidoLanding() {
                 setMontoPagoActual("");
             });
         } catch (err) {
-            console.error('❌ Error creando pedido:', err);
+            console.error('Error creando pedido:', err);
             console.error('Detalles:', err.response?.data);
             
             let errorMsg = 'Error procesando pedido';
