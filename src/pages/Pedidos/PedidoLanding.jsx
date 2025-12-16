@@ -427,7 +427,7 @@ function PedidoLanding() {
         <div className="container-fluid vh-100 font-sans bg-light d-flex flex-column overflow-hidden">
             {/* NAVBAR MÓVIL */}
             <nav className="navbar navbar-light bg-white border-bottom shadow-sm px-3 py-2 d-md-none flex-shrink-0" style={{height: '60px'}}>
-                <span className="navbar-brand fw-bold m-0" style={{color: 'var(--primary-color)'}}>KioscoApp</span>
+                <span className="navbar-brand fw-bold m-0" style={{color: 'var(--primary-color)'}}>Pedidos</span>
                 <div className="d-flex align-items-center gap-2">
                     {clienteData && <span className="badge bg-light text-dark border">Hola, {clienteData.nombre.split(' ')[0]}</span>}
                 </div>
