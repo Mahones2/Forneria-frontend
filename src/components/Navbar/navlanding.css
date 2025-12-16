@@ -1,9 +1,11 @@
-/* --- Estilos Generales --- */
+/* Heredamos variables de Landing.css, pero definimos estructura local */
+
 .header {
-  background-color: #fff; /* Asegura fondo blanco */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Sombra suave para separar del contenido */
-  position: relative;
-  z-index: 1000; /* Asegura que el header esté sobre todo */
+  background: var(--white);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky; /* Sticky como querías */
+  top: 0;
+  z-index: 1000;
   width: 100%;
 }
 
@@ -12,19 +14,20 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 0;
-  height: 80px; /* Definimos altura fija para calcular bien el menú móvil */
+  min-height: 80px;
 }
 
 .logo-img {
-  height: 50px; /* Ajusta el tamaño de tu logo */
+  height: 60px; /* Ajustado para que se vea bien */
   width: auto;
+  object-fit: contain;
 }
 
-/* --- Menú Escritorio (Default) --- */
+/* --- Menú Escritorio --- */
 .nav-menu {
   display: flex;
   list-style: none;
-  gap: 25px;
+  gap: 2rem;
   align-items: center;
   margin: 0;
   padding: 0;
@@ -33,23 +36,36 @@
 .nav-menu li a, 
 .nav-menu li a:visited {
   text-decoration: none;
-  color: #333;
+  color: var(--text-dark);
   font-weight: 500;
-  transition: color 0.3s ease;
+  transition: color 0.3s;
 }
 
 .nav-menu li a:hover {
-  color: #f0ad4e; /* Color warning/naranja */
+  color: var(--text-light);
+}
+
+/* Enlace especial para "Hacer Pedido" */
+.nav-menu li a.fw-bold.text-warning {
+    color: var(--secondary-color);
+    font-weight: bold;
+    border: 2px solid var(--secondary-color);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+.nav-menu li a.fw-bold.text-warning:hover {
+    background: var(--secondary-color);
+    color: var(--white);
 }
 
 /* --- Botón Hamburguesa --- */
 .hamburger {
-  display: none; /* Oculto en escritorio */
-  cursor: pointer;
-  background: transparent;
+  display: none;
+  background: none;
   border: none;
-  z-index: 1001; /* IMPORTANTE: Debe estar por encima del menú desplegado */
+  cursor: pointer;
   padding: 10px;
+  z-index: 1001; /* Encima del menú */
 }
 
 .bar {
@@ -57,55 +73,45 @@
   width: 25px;
   height: 3px;
   margin: 5px auto;
-  background-color: #333;
+  background-color: var(--primary-color); /* Color de las líneas */
   transition: all 0.3s ease-in-out;
   border-radius: 2px;
 }
 
-/* --- Animación del Botón Hamburguesa (La X) --- */
-/* Cuando tiene la clase 'open' (añadida por React) */
-.hamburger .bar.open:nth-child(1) {
-  transform: translateY(8px) rotate(45deg);
-}
-.hamburger .bar.open:nth-child(2) {
-  opacity: 0; /* La línea del medio desaparece */
-}
-.hamburger .bar.open:nth-child(3) {
-  transform: translateY(-8px) rotate(-45deg);
-}
+/* Animación de la X */
+.hamburger .bar.open:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+.hamburger .bar.open:nth-child(2) { opacity: 0; }
+.hamburger .bar.open:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
 
-/* --- Media Query: MÓVILES (max-width: 768px) --- */
+/* --- MÓVIL (Menú Vertical) --- */
 @media (max-width: 768px) {
   .hamburger {
-    display: block; /* Aparece el botón */
+    display: block;
   }
 
   .nav-menu {
     position: fixed;
-    top: 0; 
+    top: 0;
     left: -100%; /* Oculto a la izquierda */
     flex-direction: column;
-    background-color: #ffffff; /* Fondo sólido */
-    width: 100%; /* Ocupa todo el ancho */
-    height: 100vh; /* Ocupa toda la altura */
-    justify-content: center; /* Centra los items verticalmente */
+    justify-content: center;
+    background-color: var(--white);
+    width: 100%;
+    height: 100vh;
     text-align: center;
-    transition: 0.3s ease-in-out; /* Animación suave */
-    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
-    z-index: 999; /* Debajo del botón hamburguesa, pero sobre el contenido */
-    padding-top: 60px; /* Espacio para que no tape el logo si lo deseas */
+    transition: 0.3s ease-in-out;
+    z-index: 1000;
   }
-
-  /* Clase activa que añade React */
+  
   .nav-menu.active {
-    left: 0; /* Se desliza a la vista */
+    left: 0; /* Aparece */
   }
 
   .nav-menu li {
-    margin: 25px 0;
+    margin: 20px 0;
   }
   
   .nav-menu li a {
-    font-size: 1.2rem; /* Letra más grande en móvil */
+    font-size: 1.5rem; /* Letra más grande en móvil */
   }
 }
