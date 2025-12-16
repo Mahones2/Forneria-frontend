@@ -163,18 +163,39 @@ function POS() {
     const handleOpenNutricional = async (productoId) => {
         const token = authToken || localStorage.getItem("access");
         if (!token) return;
+
         try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
             const res = await client.get(`/pos/api/nutricional/?producto=${productoId}`, config);
-            setNutricional(res.data.length > 0 ? res.data[0] : null);
+            
+            // --- DEBUG: Descomenta esto para ver qué llega exactamente en la consola ---
+            console.log("Respuesta Nutricional:", res.data); 
+
+            let dataEncontrada = null;
+
+            // 1. Caso: Paginación de Django (tiene propiedad 'results')
+            if (res.data.results && Array.isArray(res.data.results)) {
+                dataEncontrada = res.data.results.length > 0 ? res.data.results[0] : null;
+            } 
+            // 2. Caso: Array directo (tu lógica original)
+            else if (Array.isArray(res.data)) {
+                dataEncontrada = res.data.length > 0 ? res.data[0] : null;
+            }
+            // 3. Caso: Objeto directo (si la API devolviera solo el item)
+            else if (res.data && typeof res.data === 'object') {
+                dataEncontrada = res.data;
+            }
+
+            setNutricional(dataEncontrada);
             setShowNutricionalModal(true);
+
         } catch (err) {
             console.error("Error cargando información nutricional:", err);
             setNutricional(null);
             setShowNutricionalModal(true);
         }
     };
-
+    
     const getSellosNutricionales = (nut) => {
         if (!nut) return [];
         const sellos = [];

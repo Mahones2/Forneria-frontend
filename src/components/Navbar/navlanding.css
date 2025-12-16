@@ -1,0 +1,68 @@
+/* Estilos Generales para Nav */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0; /* Ajusta tu padding según sea necesario */
+}
+
+/* Estilos para el Menú (Escritorio por defecto) */
+.nav-menu {
+  list-style: none;
+  display: flex; /* Horizontal por defecto */
+  gap: 20px; /* Espacio entre los items */
+  margin: 0;
+  padding: 0;
+}
+
+/* Ocultar el botón de hamburguesa por defecto (Escritorio) */
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 20; /* Asegura que esté por encima del menú desplegable */
+}
+
+.bar {
+  display: block;
+  width: 25px;
+  height: 3px;
+  margin: 5px auto;
+  -webkit-transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+  background-color: #333; /* Color de las líneas */
+}
+
+/* --- Media Query para Móviles --- */
+@media (max-width: 768px) {
+  /* Mostrar el botón de hamburguesa */
+  .hamburger {
+    display: block;
+  }
+
+  /* El Menú en Móvil: Oculto por defecto */
+  .nav-menu {
+    position: fixed; /* O absolute, dependiendo de tu diseño */
+    top: 60px; /* Ajusta esto a la altura de tu header */
+    left: 100%; /* Empieza fuera de la pantalla */
+    flex-direction: column; /* Vertical */
+    background-color: #fff; /* Fondo del menú desplegable */
+    width: 100%;
+    height: 100vh; /* Opcional: para que ocupe toda la altura */
+    text-align: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+  }
+  
+  /* Mostrar el Menú cuando tiene la clase 'active' */
+  .nav-menu.active {
+    left: 0; /* Despliega el menú a la vista */
+  }
+
+  /* Estilos para los Items del menú en móvil */
+  .nav-menu li {
+    margin: 15px 0; /* Espacio vertical entre los items */
+  }
+}
