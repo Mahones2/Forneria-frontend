@@ -1,20 +1,31 @@
 import { useState, useMemo, useEffect } from "react";
 import { Formik, Form, Field } from "formik";
-import client from "../../api/client"; // Asegúrate de que esto sea tu instancia de axios configurada
+import client from "../../api/client"; 
 import Swal from 'sweetalert2';
 import { productoSchema } from "../../validations/schemas";
 import FormError from "../../components/UI/FormError";
 
 export default function ProductoFormModal({ show, onClose, productToEdit, categorias, onSuccess }) {
     const [authToken] = useState(() => localStorage.getItem("access"));
-    const [activeTab, setActiveTab] = useState('general'); // Estado para las pestañas
-    const [previewImage, setPreviewImage] = useState(null); // Para previsualizar imagen
+    const [activeTab, setActiveTab] = useState('general'); 
+    const [previewImage, setPreviewImage] = useState(null); 
     
-    // Estados para etiquetas
+    // --- ESTADOS PARA ETIQUETAS Y CATEGORÍAS ---
     const [etiquetasDisponibles, setEtiquetasDisponibles] = useState([]);
     const [nuevaEtiquetaNombre, setNuevaEtiquetaNombre] = useState('');
+    
+    // Estado local para categorías (para poder agregar una nueva y verla al instante)
+    const [listaCategorias, setListaCategorias] = useState([]); 
+    const [nuevaCategoriaNombre, setNuevaCategoriaNombre] = useState('');
 
     const isEditing = !!productToEdit;
+
+    // Sincronizar categorías de props al estado local
+    useEffect(() => {
+        if (categorias) {
+            setListaCategorias(categorias);
+        }
+    }, [categorias]);
 
     // Cargar etiquetas disponibles al mostrar el modal
     useEffect(() => {
@@ -34,11 +45,8 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
 
     // Valores iniciales
     const initialValues = useMemo(() => {
-        // Helper para acceder a datos nutricionales si vienen anidados en el producto al editar
-        // Asumimos que productToEdit.nutricional existe si es edit
         const nutri = productToEdit?.nutricional || {};
         
-        // Mapear etiquetas existentes a array de IDs
         const etiquetasIds = productToEdit?.etiquetas_data 
                             ? productToEdit.etiquetas_data.map(e => e.id)
                             : [];
@@ -55,11 +63,11 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
             stock_minimo_global: productToEdit?.stock_minimo_global || 5,
             tipo: productToEdit?.tipo || "",
             presentacion: productToEdit?.presentacion || "",
-            imagen_url: null, // El archivo nuevo siempre inicia en null
-            etiquetas: etiquetasIds, // Array de IDs de etiquetas seleccionadas
+            imagen_url: null, 
+            etiquetas: etiquetasIds, 
 
             // --- NUTRICIONAL ---
-            nutricional_id: nutri.id || null, // Guardamos ID si existe para saber si hacer PUT o POST
+            nutricional_id: nutri.id || null, 
             calorias: nutri.calorias || "",
             proteinas: nutri.proteinas || "",
             grasas: nutri.grasas || "",
@@ -69,24 +77,20 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
         };
     }, [productToEdit]);
 
-    // Función para crear nueva etiqueta
+    // --- FUNCIÓN CREAR ETIQUETA ---
     const handleCrearEtiqueta = async (setFieldValue, values) => {
         const nombreLimpio = nuevaEtiquetaNombre.trim();
         if (!nombreLimpio) return;
 
         try {
-            // Crear la etiqueta en el backend
             const response = await client.post('/pos/api/etiquetas/', { nombre: nombreLimpio });
             const nuevaEtiqueta = response.data;
 
-            // Añadirla al estado de disponibles
             setEtiquetasDisponibles(prev => [...prev, nuevaEtiqueta]);
 
-            // Seleccionarla automáticamente en Formik
             const etiquetasActuales = values.etiquetas || [];
             setFieldValue('etiquetas', [...etiquetasActuales, nuevaEtiqueta.id]);
 
-            // Limpiar el input
             setNuevaEtiquetaNombre('');
 
             Swal.fire({
@@ -101,30 +105,61 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: error.response?.data?.nombre?.[0] || 'No se pudo crear la etiqueta (quizás ya existe).',
+                text: error.response?.data?.nombre?.[0] || 'No se pudo crear la etiqueta.',
+            });
+        }
+    };
+
+    // --- NUEVA FUNCIÓN CREAR CATEGORÍA ---
+    const handleCrearCategoria = async (setFieldValue) => {
+        const nombreLimpio = nuevaCategoriaNombre.trim();
+        if (!nombreLimpio) return;
+
+        try {
+            // Ajusta la URL si tu endpoint es diferente
+            const response = await client.post('/pos/api/categorias/', { nombre: nombreLimpio });
+            const nuevaCategoria = response.data;
+
+            // Agregamos la nueva categoría a la lista local para que aparezca en el Select
+            setListaCategorias(prev => [...prev, nuevaCategoria]);
+
+            // Seleccionamos automáticamente la nueva categoría en el Formik
+            setFieldValue('categoria', nuevaCategoria.id);
+
+            setNuevaCategoriaNombre('');
+
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: `Categoría '${nuevaCategoria.nombre}' creada`,
+                showConfirmButton: false,
+                timer: 1500
+            });
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.nombre?.[0] || 'No se pudo crear la categoría.',
             });
         }
     };
 
     const handleSubmit = async (values, { setSubmitting }) => {
         try {
-            // 1. PREPARAR DATOS DEL PRODUCTO (FormData por la imagen)
             const productData = new FormData();
             productData.append('nombre', values.nombre);
             productData.append('categoria', values.categoria);
             productData.append('precio_venta', values.precio_venta);
             productData.append('stock_minimo_global', values.stock_minimo_global);
             
-            // Adjuntar etiquetas - DRF espera múltiples campos con el mismo nombre
             const etiquetasArray = Array.isArray(values.etiquetas) ? values.etiquetas : (values.etiquetas ? [values.etiquetas] : []);
-            // Solo enviar si hay etiquetas seleccionadas
             if (etiquetasArray.length > 0) {
                 etiquetasArray.forEach(tagId => {
                     productData.append('etiquetas', parseInt(tagId, 10));
                 });
             }
             
-            // Campos opcionales: enviar solo si tienen valor
             if (values.codigo_barra) productData.append('codigo_barra', values.codigo_barra);
             if (values.marca) productData.append('marca', values.marca);
             if (values.descripcion) productData.append('descripcion', values.descripcion);
@@ -132,36 +167,19 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
             if (values.tipo) productData.append('tipo', values.tipo);
             if (values.presentacion) productData.append('presentacion', values.presentacion);
 
-            // Imagen: Solo si es un objeto File válido
             if (values.imagen_url && values.imagen_url instanceof File && values.imagen_url.size > 0) {
-                console.log('📤 Agregando imagen a FormData:', values.imagen_url.name, values.imagen_url.type);
-                // El backend espera el campo como 'imagen', no 'imagen_url'
+                console.log('📤 Agregando imagen a FormData:', values.imagen_url.name);
                 productData.append('imagen', values.imagen_url);
-            }
-
-            // Log de todo el FormData antes de enviar
-            console.log('📦 FormData a enviar:');
-            for (let [key, value] of productData.entries()) {
-                if (value instanceof File) {
-                    console.log(`  ${key}: [File] ${value.name} (${value.size} bytes)`);
-                } else {
-                    console.log(`  ${key}: ${value}`);
-                }
             }
 
             let productId = null;
             let productResponse = null;
 
-            // 2. GUARDAR PRODUCTO
-            // Config: Solo Authorization, NO tocar Content-Type para FormData
             const formConfig = {
-                headers: {
-                    Authorization: `Bearer ${authToken}`,
-                },
-                // Forzar que Axios NO use JSON para FormData
+                headers: { Authorization: `Bearer ${authToken}` },
                 transformRequest: [(data, headers) => {
                     if (data instanceof FormData) {
-                        delete headers['Content-Type']; // Dejar que el navegador lo configure
+                        delete headers['Content-Type']; 
                     }
                     return data;
                 }]
@@ -175,8 +193,6 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
                 productId = productResponse.data.id;
             }
 
-            // 3. PREPARAR DATOS NUTRICIONALES (JSON)
-            // Solo intentamos guardar si hay al menos un dato nutricional lleno o si estamos editando
             const hasNutritionalData = values.calorias || values.proteinas || values.grasas;
             
             if (productId && hasNutritionalData) {
@@ -187,10 +203,9 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
                     carbohidratos: values.carbohidratos || 0,
                     azucares: values.azucares || 0,
                     sodio: values.sodio || 0,
-                    producto: productId // RELACIÓN ONE-TO-ONE
+                    producto: productId 
                 };
 
-                // Configuración para JSON (Content-Type: application/json)
                 const jsonConfig = { 
                     headers: { 
                         Authorization: `Bearer ${authToken}`,
@@ -199,19 +214,12 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
                 };
 
                 if (values.nutricional_id) {
-                    // Si ya existía info nutricional, actualizamos (PATCH)
                     await client.patch(`/pos/api/nutricional/${values.nutricional_id}/`, nutriPayload, jsonConfig);
                 } else {
-                    // Si no existía (o es producto nuevo), creamos (POST)
-                    // Primero verificamos si el backend crea uno por defecto vacio, si no, post.
-                    // Para seguridad intentamos POST, si falla (400) por unique constraint, hacemos PATCH buscando el ID (lógica compleja).
-                    // Asumiremos flujo estándar: Nuevo Producto -> POST Nutricional.
                     try {
                          await client.post(`/pos/api/nutricional/`, nutriPayload, jsonConfig);
                     } catch (nutriErr) {
-                        // Si falla porque ya existe (ej: creado automáticamente por signals en Django), intentamos update
                         console.warn("Posiblemente ya existe nutricional, intentando patch...", nutriErr);
-                        // Esto requeriría saber el ID del nutricional creado automáticamente, lo omitiremos por simplicidad
                     }
                 }
             }
@@ -229,19 +237,10 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
 
         } catch (err) {
             console.error('❌ Error completo:', err);
-            console.error('📋 Respuesta del backend:', err.response?.data);
-            
             let errorMessage = 'Error desconocido';
             if (err.response?.data) {
-                if (typeof err.response.data === 'string') {
-                    errorMessage = err.response.data;
-                } else if (err.response.data.detail) {
-                    errorMessage = err.response.data.detail;
-                } else {
-                    errorMessage = JSON.stringify(err.response.data, null, 2);
-                }
+                errorMessage = JSON.stringify(err.response.data, null, 2);
             }
-            
             Swal.fire({
                 icon: 'error',
                 title: 'Error al procesar',
@@ -253,7 +252,6 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
         }
     };
 
-    // Manejo de cambio de imagen
     const handleImageChange = (event, setFieldValue) => {
         const file = event.currentTarget.files[0];
         if (file) {
@@ -265,7 +263,6 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
     if (!show) return null;
 
     return (
-        // Cambio a modal-xl para más espacio
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
             <div className="modal-dialog modal-xl"> 
                 <div className="modal-content">
@@ -278,14 +275,13 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
 
                     <Formik
                         initialValues={initialValues}
-                        validationSchema={productoSchema} // Asegúrate de actualizar tu schema para permitir los nuevos campos
+                        validationSchema={productoSchema} 
                         onSubmit={handleSubmit}
                         enableReinitialize
                     >
                         {({ isSubmitting, errors, touched, setFieldValue, values }) => (
                             <Form>
                                 <div className="modal-body">
-                                    {/* --- TABS DE NAVEGACIÓN --- */}
                                     <ul className="nav nav-tabs mb-4">
                                         <li className="nav-item">
                                             <button 
@@ -307,7 +303,6 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
                                         </li>
                                     </ul>
 
-                                    {/* --- CONTENIDO TABS --- */}
                                     <div className="tab-content">
                                         
                                         {/* TAB 1: GENERAL */}
@@ -328,9 +323,10 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
 
                                                         <div className="col-md-4">
                                                             <label className="form-label fw-semibold">Categoría <span className="text-danger">*</span></label>
+                                                            {/* Usamos listaCategorias (estado local) en lugar de la prop directa */}
                                                             <Field as="select" name="categoria" className={`form-select ${errors.categoria && touched.categoria ? 'is-invalid' : ''}`}>
                                                                 <option value="">Seleccione...</option>
-                                                                {categorias.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+                                                                {listaCategorias.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
                                                             </Field>
                                                             <FormError name="categoria" />
                                                         </div>
@@ -393,7 +389,7 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
                                                     </div>
                                                 </div>
 
-                                                {/* Columna Derecha: Imagen y Presentación */}
+                                                {/* Columna Derecha: Imagen, Presentación, Crear Tags y Categorías */}
                                                 <div className="col-md-4 border-start">
                                                     <div className="mb-3">
                                                         <label className="form-label fw-semibold">Presentación</label>
@@ -408,7 +404,6 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
                                                             accept="image/*"
                                                             onChange={(e) => handleImageChange(e, setFieldValue)}
                                                         />
-                                                        {/* Previsualización */}
                                                         <div className="mt-3 text-center p-2 border rounded bg-light">
                                                             {previewImage ? (
                                                                 <img src={previewImage} alt="Preview" className="img-fluid" style={{ maxHeight: '150px' }} />
@@ -421,13 +416,15 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
                                                             )}
                                                         </div>
                                                     </div>
+
+                                                    {/* SECCIÓN CREAR ETIQUETA */}
                                                     <div className="mb-3 pt-3 border-top">
                                                         <label className="form-label fw-semibold">➕ Crear Nueva Etiqueta</label>
                                                         <div className="input-group">
                                                             <input
                                                                 type="text"
                                                                 className="form-control"
-                                                                placeholder="Ej: Vegano, Sin Gluten"
+                                                                placeholder="Ej: Vegano"
                                                                 value={nuevaEtiquetaNombre}
                                                                 onChange={(e) => setNuevaEtiquetaNombre(e.target.value)}
                                                             />
@@ -440,8 +437,31 @@ export default function ProductoFormModal({ show, onClose, productToEdit, catego
                                                                 <i className="bi bi-plus-lg"></i>
                                                             </button>
                                                         </div>
-                                                        <small className="form-text text-muted">Crea y selecciona la etiqueta al instante.</small>
-                                                    </div>                                                </div>
+                                                    </div>     
+
+                                                    {/* SECCIÓN CREAR CATEGORÍA (NUEVA) */}
+                                                    <div className="mb-3 pt-3 border-top">
+                                                        <label className="form-label fw-semibold">📁 Crear Nueva Categoría</label>
+                                                        <div className="input-group">
+                                                            <input
+                                                                type="text"
+                                                                className="form-control"
+                                                                placeholder="Ej: Bebidas"
+                                                                value={nuevaCategoriaNombre}
+                                                                onChange={(e) => setNuevaCategoriaNombre(e.target.value)}
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                className="btn btn-success"
+                                                                onClick={() => handleCrearCategoria(setFieldValue)}
+                                                                disabled={!nuevaCategoriaNombre.trim()}
+                                                            >
+                                                                <i className="bi bi-plus-lg"></i>
+                                                            </button>
+                                                        </div>
+                                                        <small className="form-text text-muted">Se seleccionará automáticamente.</small>
+                                                    </div>                                           
+                                                </div>
                                             </div>
                                         </div>
 

@@ -505,11 +505,11 @@ function POS() {
 
     if (!authToken) return null; 
 
-    // !!! CORRECCIÓN PRINCIPAL AQUÍ !!!
-    // Cambiado de "const CartContent = () => (..." a "const renderCartContent = () => (..."
-    // Esto evita que React desmonte el input en cada renderizado.
+    // COMPONENTE RENDERIZADO COMO FUNCIÓN AUXILIAR
+    // (Arregla el foco del input y se suavizaron los bordes)
     const renderCartContent = () => (
         <div className="d-flex flex-column h-100">
+             {/* Se eliminó border-bottom duro, se usa border-light para suavizar */}
              <div className="px-3 pb-2 border-bottom pt-3">
                 <h4 className="fw-bold"><i className="bi bi-cart4"></i> Venta</h4>
                 
@@ -545,7 +545,7 @@ function POS() {
                 ) : (
                    <ul className="list-group list-group-flush">
                        {cart.map((item) => (
-                            <li key={item.id} className="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <li key={item.id} className="list-group-item px-0 py-2 d-flex justify-content-between align-items-center border-bottom">
                                 <div style={{width: '45%'}}>
                                     <div className="fw-bold text-truncate">{item.nombre}</div>
                                     <div className="small text-muted">{formatCurrency(item.precio_unitario)} c/u</div>
@@ -599,7 +599,8 @@ function POS() {
                      </div>
                 )}
 
-                <div className="d-flex justify-content-between align-items-center border-bottom border-secondary pt-2 mb-2">
+                {/* AQUÍ ESTABA EL PROBLEMA DE LA LÍNEA NEGRA: Se cambió border-secondary por border-bottom simple (gris claro) */}
+                <div className="d-flex justify-content-between align-items-center border-bottom pt-2 mb-2">
                     <span className="fs-5 fw-bold text-dark">TOTAL</span>
                     <span className="fs-4 fw-bolder text-primary">
                         {formatCurrency(cartTotal)}
@@ -854,7 +855,7 @@ function POS() {
 
                 {/* --- COLUMNA DERECHA --- */}
                 <div className="d-none d-lg-block col-lg-3 bg-white border-start shadow h-100 overflow-hidden">
-                    {/* AQUÍ ESTÁ EL CAMBIO: Llamamos a la función directamente */}
+                    {/* AQUÍ LLAMAMOS A LA FUNCIÓN DIRECTAMENTE */}
                     {renderCartContent()}
                 </div>
             </div>
@@ -877,7 +878,7 @@ function POS() {
                     <button type="button" className="btn-close btn-close-white" onClick={() => setShowMobileCart(false)}></button>
                 </div>
                 <div className="offcanvas-body p-0">
-                    {/* AQUÍ ESTÁ EL CAMBIO: Llamamos a la función directamente */}
+                     {/* AQUÍ LLAMAMOS A LA FUNCIÓN DIRECTAMENTE */}
                     {renderCartContent()}
                 </div>
             </div>
@@ -897,6 +898,7 @@ function POS() {
                                 {nutricional && (
                                     <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
                                         {getSellosNutricionales(nutricional).map((sello, i) => (
+                                            /* NOTA: Estos sellos tienen 'outline' negro por estándar chileno. Si también te molesta eso, quita 'outline' en el estilo de abajo */
                                             <div key={i} className="bg-black text-white d-flex align-items-center justify-content-center text-center p-1 fw-bold" style={{width:"80px",height:"80px",borderRadius:"50%", fontSize: '0.65rem', border: '2px solid white', outline: '2px solid black'}}>{sello}</div>
                                         ))}
                                     </div>

@@ -3,6 +3,7 @@ import { useState } from "react"; // Importamos useState
 import { Link } from "react-router-dom";
 // Asegúrate de que esta ruta a la imagen sea correcta
 import logo from "../../assets/logo.png";
+import "./navlanding.css";
 
 export default function NavbarLanding() {
   // Estado para controlar si el menú móvil está abierto o cerrado
