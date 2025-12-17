@@ -251,17 +251,31 @@ function PedidoLanding() {
 
     // --- 6. PAGOS ---
     const handleAddPago = () => {
-        const montoActualDec = new Decimal(montoPagoActual || 0);
-        if (montoActualDec.isZero() || saldoPendiente.isZero()) return;
-        let montoAplicado = montoActualDec.greaterThan(saldoPendiente) ? saldoPendiente : montoActualDec;
-        let montoRecibido = montoActualDec;
-        if (metodoPagoActual !== 'EFE') montoRecibido = montoAplicado;
+        if (saldoPendiente.isZero()) return;
+
+        // Si el input está vacío o es 0, asumimos que quiere pagar TODO el saldo pendiente
+        let montoIngresado = new Decimal(montoPagoActual || 0);
+        if (montoIngresado.leq(0)) {
+            montoIngresado = saldoPendiente;
+        }
+
+        // Lógica para no pagar más de lo necesario (a menos que sea efectivo para vuelto)
+        let montoAplicado = montoIngresado.greaterThan(saldoPendiente) ? saldoPendiente : montoIngresado;
+        
+        // Si es efectivo, guardamos lo que realmente entregó el cliente (para calcular vuelto)
+        // Si es tarjeta, el monto recibido es igual al aplicado
+        let montoRecibido = montoIngresado; 
+        if (metodoPagoActual !== 'EFE') {
+            montoRecibido = montoAplicado;
+        }
+
         setPagosRealizados(prev => [...prev, {
             metodo: metodoPagoActual,
-            monto: montoAplicado,
-            monto_recibido: montoRecibido 
+            monto: montoAplicado,       // Lo que se descuenta de la deuda
+            monto_recibido: montoRecibido // Lo que entregó el cliente (billete)
         }]);
-        setMontoPagoActual(""); 
+        
+        setMontoPagoActual(""); // Limpiar input
     };
 
     // --- 7. FINALIZAR ---
