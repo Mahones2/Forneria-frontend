@@ -8,7 +8,8 @@ import { Link } from "react-router-dom";
 const METODOS_PAGO = [
     { code: 'DEB', label: 'Débito' },
     { code: 'CRE', label: 'Crédito' },
-    { code: 'TRA', label: 'Transferencia' }
+    { code: 'TRA', label: 'Transferencia' },
+    { code: 'EFE', label: 'Efectivo' } // Asegúrate de tener Efectivo si quieres calcular vuelto
 ];
 
 // --- HELPERS ---
@@ -56,8 +57,8 @@ function PedidoLanding() {
     });
 
     // --- ESTADO NUTRICIONAL (COPIADO DEL POS) ---
-    const [nutricional, setNutricional] = useState(null); // Renombrado para coincidir con POS
-    const [showNutricionalModal, setShowNutricionalModal] = useState(false); // Renombrado
+    const [nutricional, setNutricional] = useState(null); 
+    const [showNutricionalModal, setShowNutricionalModal] = useState(false); 
 
     // --- ESTADO PAGOS ---
     const [pagosRealizados, setPagosRealizados] = useState([]); 
@@ -101,16 +102,12 @@ function PedidoLanding() {
         fetchCatalogo();
     }, []);
 
-    // --- 2. LÓGICA NUTRICIONAL (EXACTA DEL POS) ---
+    // --- 2. LÓGICA NUTRICIONAL ---
     const handleOpenNutricional = async (productoId) => {
         try {
-            // Nota: Aquí usamos publicClient porque estamos en el Landing, pero la URL es la misma
             const res = await client.get(`/pos/api/nutricional/?producto=${productoId}`);
-            
-            // Lógica exacta del POS: toma el primer elemento del array
             setNutricional(res.data.length > 0 ? res.data[0] : null);
             setShowNutricionalModal(true);
-
         } catch (err) {
             console.error("Error cargando información nutricional:", err);
             setNutricional(null);
@@ -200,7 +197,7 @@ function PedidoLanding() {
         }, new Decimal(0)).round();
     }, [pagosRealizados]);
 
-    // --- 5. CLIENTE (INPUT CORREGIDO) ---
+    // --- 5. CLIENTE ---
     const handleRutChange = (e) => {
         let valor = e.target.value;
         valor = valor.replace(/[^0-9kK-]/g, '');
@@ -249,21 +246,25 @@ function PedidoLanding() {
         }
     };
 
-    // --- 6. PAGOS ---
+    // --- 6. PAGOS (CORREGIDO) ---
     const handleAddPago = () => {
+        // 1. Si no hay deuda, no hacemos nada
         if (saldoPendiente.isZero()) return;
 
-        // Si el input está vacío o es 0, asumimos que quiere pagar TODO el saldo pendiente
+        // 2. Determinar monto a pagar
         let montoIngresado = new Decimal(montoPagoActual || 0);
+
+        // Si el usuario no ingresó monto o es 0, asumimos que quiere pagar TODO el pendiente
         if (montoIngresado.leq(0)) {
             montoIngresado = saldoPendiente;
         }
 
-        // Lógica para no pagar más de lo necesario (a menos que sea efectivo para vuelto)
+        // 3. Monto Aplicado: No podemos abonar a la deuda más de lo que se debe
         let montoAplicado = montoIngresado.greaterThan(saldoPendiente) ? saldoPendiente : montoIngresado;
         
-        // Si es efectivo, guardamos lo que realmente entregó el cliente (para calcular vuelto)
-        // Si es tarjeta, el monto recibido es igual al aplicado
+        // 4. Monto Recibido:
+        // Si es Efectivo (EFE), guardamos lo que realmente nos dieron (ej: billete de 20.000) para calcular vuelto.
+        // Si es Tarjeta, asumimos que el pago es exacto al monto aplicado.
         let montoRecibido = montoIngresado; 
         if (metodoPagoActual !== 'EFE') {
             montoRecibido = montoAplicado;
@@ -271,11 +272,11 @@ function PedidoLanding() {
 
         setPagosRealizados(prev => [...prev, {
             metodo: metodoPagoActual,
-            monto: montoAplicado,       // Lo que se descuenta de la deuda
-            monto_recibido: montoRecibido // Lo que entregó el cliente (billete)
+            monto: montoAplicado,
+            monto_recibido: montoRecibido 
         }]);
         
-        setMontoPagoActual(""); // Limpiar input
+        setMontoPagoActual(""); // Limpiar input después de agregar
     };
 
     // --- 7. FINALIZAR ---
@@ -300,7 +301,6 @@ function PedidoLanding() {
                 text: 'Gracias por tu compra', 
                 icon: 'success'
             }).then(() => {
-                // Limpiar el estado en vez de recargar la página
                 setCart([]);
                 setPagosRealizados([]);
                 setClienteData(null);
@@ -310,19 +310,8 @@ function PedidoLanding() {
             });
         } catch (err) {
             console.error('Error creando pedido:', err);
-            console.error('Detalles:', err.response?.data);
-            
             let errorMsg = 'Error procesando pedido';
-            if (err.code === 'ECONNABORTED') {
-                errorMsg = 'La petición tardó demasiado. Intenta nuevamente.';
-            } else if (err.response?.data?.detail) {
-                errorMsg = err.response.data.detail;
-            } else if (err.response?.data) {
-                errorMsg = JSON.stringify(err.response.data);
-            } else if (err.message) {
-                errorMsg = err.message;
-            }
-            
+            if (err.response?.data?.detail) errorMsg = err.response.data.detail;
             Swal.fire('Error', errorMsg, 'error');
         } finally {
             setIsProcessing(false);
@@ -351,7 +340,7 @@ function PedidoLanding() {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     // ==========================================
-    // RENDER HELPER (CART SIDEBAR)
+    // RENDER HELPER (CART SIDEBAR) - CORREGIDO
     // ==========================================
     const renderCartContent = () => (
         <div className="d-flex flex-column h-100">
@@ -418,7 +407,20 @@ function PedidoLanding() {
                                 <select className="form-select" style={{maxWidth:'80px'}} value={metodoPagoActual} onChange={e => setMetodoPagoActual(e.target.value)}>
                                     {METODOS_PAGO.map(m => <option key={m.code} value={m.code}>{m.label}</option>)}
                                 </select>
-                                <button className="btn btn-warning w-100" onClick={handleAddPago}>Pagar Total</button>
+                                
+                                {/* AQUÍ SE AGREGÓ EL INPUT QUE FALTABA */}
+                                <input 
+                                    type="number" 
+                                    className="form-control" 
+                                    placeholder={`Resto: ${saldoPendiente.toNumber()}`}
+                                    value={montoPagoActual}
+                                    onChange={(e) => setMontoPagoActual(e.target.value)}
+                                    onKeyDown={(e) => e.key === 'Enter' && handleAddPago()}
+                                />
+
+                                <button className="btn btn-warning" onClick={handleAddPago} style={{minWidth: '60px'}}>
+                                    {montoPagoActual ? 'Agregar' : 'Todo'}
+                                </button>
                             </div>
                         )}
                         <button 
@@ -480,7 +482,7 @@ function PedidoLanding() {
                         </div>
                     </div>
 
-                    {/* GRID PRODUCTOS (CARTA MODIFICADA) */}
+                    {/* GRID PRODUCTOS */}
                     <div className="flex-grow-1 overflow-auto p-3 pb-5" style={{backgroundColor: '#f8f9fa'}}>
                         <div className="row g-3">
                             {currentItems.map(prod => (
@@ -627,7 +629,7 @@ function PedidoLanding() {
                                 <button className="btn-close" onClick={() => setShowNutricionalModal(false)}></button>
                             </div>
                             <div className="modal-body text-center">
-                                {/* SELLOS (Círculos Negros) */}
+                                {/* SELLOS */}
                                 {nutricional && (
                                     <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
                                         {getSellosNutricionales(nutricional).map((sello, i) => (
