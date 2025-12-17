@@ -18,8 +18,17 @@ function ClientCreationModal({ isOpen, onClose, initialRut, onCreate }) {
     }), [initialRut]);
 
     // Manejador de envío del formulario
-    const handleSubmit = async (values, { setSubmitting, resetForm }) => {
+    const handleSubmit = async (values, formikHelpers) => {
+        const { setSubmitting, resetForm, setTouched, validateForm } = formikHelpers;
         setFormError(null);
+
+        // Validar todos los campos antes de enviar
+        const errors = await validateForm();
+        if (Object.keys(errors).length > 0) {
+            setTouched({ rut: true, nombre: true, correo: true, telefono: true, direccion: true });
+            setSubmitting(false);
+            return;
+        }
 
         // Llama a la función onCreate (pasada desde POS.jsx)
         const success = await onCreate(values);
@@ -116,6 +125,9 @@ function ClientCreationModal({ isOpen, onClose, initialRut, onCreate }) {
                                                 disabled={isSubmitting}
                                                 title="Formato chileno: +56912345678 o 912345678"
                                             />
+                                            <div className="form-text text-muted" style={{ fontSize: '0.85em' }}>
+                                                Formato esperado: <span style={{ color: '#888' }}>+56912345678</span> o <span style={{ color: '#888' }}>912345678</span>
+                                            </div>
                                             <FormError name="telefono" />
                                         </div>
 
