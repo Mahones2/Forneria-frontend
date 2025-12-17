@@ -76,12 +76,12 @@ export const clienteSchema = Yup.object({
   correo: Yup.string()
     .email(messages.email)
     .max(100, messages.maxLength(100))
-    .nullable(),
+    .required(messages.required),
 
   telefono: Yup.string()
     .test('phone-format', messages.phoneFormat, validateChileanPhone)
-    .max(20, messages.maxLength(20))
-    .nullable(),
+    .matches(/^(\+?56)?(9\d{8})$/, messages.phoneFormat)
+    .required(messages.required),
 
   direccion: Yup.string()
     .max(250, messages.maxLength(250))

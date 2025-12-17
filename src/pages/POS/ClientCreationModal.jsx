@@ -93,7 +93,7 @@ function ClientCreationModal({ isOpen, onClose, initialRut, onCreate }) {
 
                                         {/* Campo Email */}
                                         <div className="col-md-6">
-                                            <label htmlFor="correo" className="form-label fw-semibold">Email</label>
+                                            <label htmlFor="correo" className="form-label fw-semibold">Email <span className="text-danger">*</span></label>
                                             <Field
                                                 type="email"
                                                 name="correo"
@@ -106,7 +106,7 @@ function ClientCreationModal({ isOpen, onClose, initialRut, onCreate }) {
 
                                         {/* Campo Teléfono */}
                                         <div className="col-md-6">
-                                            <label htmlFor="telefono" className="form-label fw-semibold">Teléfono</label>
+                                            <label htmlFor="telefono" className="form-label fw-semibold">Teléfono <span className="text-danger">*</span></label>
                                             <Field
                                                 type="tel"
                                                 name="telefono"
