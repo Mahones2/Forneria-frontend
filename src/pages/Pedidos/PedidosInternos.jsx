@@ -238,7 +238,7 @@ export default function PedidosInternos() {
             {/* HEADER SUPERIOR */}
             <header className="bg-white px-4 py-3 border-bottom shadow-sm d-flex justify-content-between align-items-center" style={{height: '70px', zIndex: 10}}>
                 <div className="d-flex align-items-center gap-2">
-                    <h4 className="m-0 fw-bold text-primary">Pedidos</h4>
+                    <h4 className="m-0 fw-bold text-primary">Monitor de Cocina</h4>
                 </div>
                 <div className="d-flex align-items-center gap-3">
                     <div className="d-none d-md-block text-end lh-1">
