@@ -55,7 +55,7 @@ function ClientCreationModal({ isOpen, onClose, initialRut, onCreate }) {
                         onSubmit={handleSubmit}
                         enableReinitialize
                     >
-                        {({ isSubmitting, errors, touched }) => (
+                        {({ isSubmitting, errors, touched, isValid, dirty }) => (
                             <Form>
                                 <div className="modal-body">
                                     {formError && <div className="alert alert-danger">{formError}</div>}
@@ -110,9 +110,11 @@ function ClientCreationModal({ isOpen, onClose, initialRut, onCreate }) {
                                             <Field
                                                 type="tel"
                                                 name="telefono"
+                                                pattern="^(\+?56)?(9\d{8})$"
                                                 className={`form-control ${errors.telefono && touched.telefono ? 'is-invalid' : ''}`}
                                                 placeholder="912345678"
                                                 disabled={isSubmitting}
+                                                title="Formato chileno: +56912345678 o 912345678"
                                             />
                                             <FormError name="telefono" />
                                         </div>
@@ -144,7 +146,7 @@ function ClientCreationModal({ isOpen, onClose, initialRut, onCreate }) {
                                     <button
                                         type="submit"
                                         className="btn btn-primary"
-                                        disabled={isSubmitting}
+                                        disabled={isSubmitting || !isValid || !dirty}
                                     >
                                         {isSubmitting ? (
                                             <>

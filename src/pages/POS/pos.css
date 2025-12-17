@@ -31,3 +31,149 @@
     /* Asegura que el texto siga siendo blanco */
     color: #fff; 
 }
+
+/* ========== CARRITO STICKY ========== */
+
+/* Hacer el carrito sticky/fixed en desktop y tablets */
+@media (min-width: 768px) {
+    .col-md-4.bg-white.border-start.shadow {
+        position: sticky;
+        top: 1rem;
+        max-height: calc(100vh - 2rem);
+        overflow-y: auto;
+        align-self: flex-start;
+    }
+}
+
+/* ========== RESPONSIVE POS ========== */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 991px) {
+    /* Reducir padding del container */
+    .container-fluid {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    /* Grid de productos más compacto */
+    .row.g-3 {
+        gap: 0.75rem !important;
+    }
+
+    /* Ajustar columnas de productos */
+    .col-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    /* Carrito sigue siendo sticky en tablets */
+    .col-md-4.bg-white.border-start.shadow {
+        top: 0.75rem;
+        max-height: calc(100vh - 1.5rem);
+    }
+}
+
+/* Móviles */
+@media (max-width: 767px) {
+    /* Título más pequeño */
+    h2.text-primary {
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Búsqueda y filtros */
+    .d-flex.justify-content-left {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 0.5rem;
+    }
+
+    .d-flex.gap-2.ms-5 {
+        margin-left: 0 !important;
+        flex-direction: column;
+        gap: 0.5rem !important;
+    }
+
+    /* Productos en una sola columna */
+    .col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* Cards de productos */
+    .card .card-body {
+        padding: 0.75rem !important;
+    }
+
+    .card h6 {
+        font-size: 0.9rem;
+    }
+
+    .card .small {
+        font-size: 0.8rem;
+    }
+
+    /* Reducir altura de imágenes */
+    .card img {
+        max-height: 80px !important;
+    }
+
+    /* En móvil, el carrito no es sticky para evitar problemas */
+    .col-md-4.bg-white.border-start.shadow {
+        position: relative;
+        top: auto;
+        max-height: none;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .col-md-4 h4 {
+        font-size: 1rem;
+    }
+
+    /* Items del carrito */
+    .list-group-item {
+        padding: 0.5rem !important;
+        font-size: 0.85rem;
+    }
+
+    /* Botones más compactos */
+    .btn-sm {
+        padding: 0.15rem 0.35rem;
+        font-size: 0.75rem;
+    }
+
+    /* Área de pago */
+    .bg-light.p-3 {
+        padding: 0.75rem !important;
+    }
+
+    .fs-5 {
+        font-size: 0.95rem !important;
+    }
+
+    .fs-4 {
+        font-size: 1.1rem !important;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 575px) {
+    /* Padding mínimo */
+    .p-4 {
+        padding: 0.75rem !important;
+    }
+
+    /* Botones de acción full width */
+    .btn.w-100 {
+        font-size: 0.9rem;
+    }
+
+    /* Inputs más pequeños */
+    .form-control,
+    .form-select {
+        font-size: 0.9rem;
+    }
+}
+
+
