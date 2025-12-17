@@ -1,15 +1,15 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import client from "../../api/publicClient"; 
 import Swal from 'sweetalert2';
 import { Decimal } from "decimal.js";
 import { Link } from "react-router-dom";
 
-// --- CONSTANTES ---
+// --- CONSTANTES (IGUAL QUE POS) ---
 const METODOS_PAGO = [
+    { code: 'EFE', label: 'Efectivo' },
     { code: 'DEB', label: 'Débito' },
     { code: 'CRE', label: 'Crédito' },
-    { code: 'TRA', label: 'Transferencia' },
-    { code: 'EFE', label: 'Efectivo' } // Asegúrate de tener Efectivo si quieres calcular vuelto
+    { code: 'TRA', label: 'Transferencia' }
 ];
 
 // --- HELPERS ---
@@ -56,14 +56,14 @@ function PedidoLanding() {
         nombre: "", correo: "", telefono: "", es_empresa: false
     });
 
-    // --- ESTADO NUTRICIONAL (COPIADO DEL POS) ---
+    // --- ESTADO NUTRICIONAL ---
     const [nutricional, setNutricional] = useState(null); 
     const [showNutricionalModal, setShowNutricionalModal] = useState(false); 
 
     // --- ESTADO PAGOS ---
     const [pagosRealizados, setPagosRealizados] = useState([]); 
     const [montoPagoActual, setMontoPagoActual] = useState(""); 
-    const [metodoPagoActual, setMetodoPagoActual] = useState("DEB"); 
+    const [metodoPagoActual, setMetodoPagoActual] = useState("EFE"); // Default Efectivo como POS
     const [fechaEntrega, setFechaEntrega] = useState(""); 
 
     const [isProcessing, setIsProcessing] = useState(false);
@@ -178,16 +178,29 @@ function PedidoLanding() {
         if(cart.length === 0) return;
         setCart([]);
         setPagosRealizados([]);
+        setMontoPagoActual("");
     };
 
-    // --- 4. CÁLCULOS ---
+    // --- 4. CÁLCULOS (MODIFICADO SEGÚN POS) ---
     const cartTotal = useMemo(() => cart.reduce((acc, item) => acc.plus(item.precio_unitario.times(item.cantidad)), new Decimal(0)).round(), [cart]);
+    
     const totalPagado = useMemo(() => pagosRealizados.reduce((acc, pago) => acc.plus(pago.monto), new Decimal(0)).round(), [pagosRealizados]);
+    
     const saldoPendiente = useMemo(() => {
         const pendiente = cartTotal.minus(totalPagado);
         return pendiente.isNegative() ? new Decimal(0) : pendiente;
     }, [cartTotal, totalPagado]);
     
+    // Nuevo cálculo de POS: Vuelto en tiempo real al escribir
+    const vueltoCalculado = useMemo(() => {
+        const montoActualDec = new Decimal(montoPagoActual || 0);
+        if (metodoPagoActual !== 'EFE') return new Decimal(0); 
+        
+        const diff = montoActualDec.minus(saldoPendiente);
+        return diff.isNegative() ? new Decimal(0) : diff.round();
+    }, [montoPagoActual, saldoPendiente, metodoPagoActual]);
+
+    // Cálculo final del vuelto a entregar (basado en lo ya pagado)
     const vueltoTotalFinal = useMemo(() => {
         return pagosRealizados.reduce((acc, pago) => {
             if (pago.metodo === 'EFE' && pago.monto_recibido.greaterThan(pago.monto)) {
@@ -246,37 +259,48 @@ function PedidoLanding() {
         }
     };
 
-    // --- 6. PAGOS (CORREGIDO) ---
+    // --- 6. PAGOS (LÓGICA POS RESTAURADA) ---
     const handleAddPago = () => {
-        // 1. Si no hay deuda, no hacemos nada
-        if (saldoPendiente.isZero()) return;
+        const montoActualDec = new Decimal(montoPagoActual || 0);
 
-        // 2. Determinar monto a pagar
-        let montoIngresado = new Decimal(montoPagoActual || 0);
+        // Validaciones básicas
+        if (montoActualDec.isZero() || saldoPendiente.isZero()) return;
 
-        // Si el usuario no ingresó monto o es 0, asumimos que quiere pagar TODO el pendiente
-        if (montoIngresado.leq(0)) {
-            montoIngresado = saldoPendiente;
+        let montoAplicado;
+        let montoRecibido;
+        
+        // 1. Determinar monto a aplicar a la deuda
+        if (montoActualDec.greaterThan(saldoPendiente)) {
+            montoAplicado = saldoPendiente;
+        } else {
+            montoAplicado = montoActualDec;
         }
 
-        // 3. Monto Aplicado: No podemos abonar a la deuda más de lo que se debe
-        let montoAplicado = montoIngresado.greaterThan(saldoPendiente) ? saldoPendiente : montoIngresado;
-        
-        // 4. Monto Recibido:
-        // Si es Efectivo (EFE), guardamos lo que realmente nos dieron (ej: billete de 20.000) para calcular vuelto.
-        // Si es Tarjeta, asumimos que el pago es exacto al monto aplicado.
-        let montoRecibido = montoIngresado; 
-        if (metodoPagoActual !== 'EFE') {
+        // 2. Determinar monto recibido real y validaciones por método
+        if (metodoPagoActual === 'EFE') {
+            montoRecibido = montoActualDec;
+            if (montoActualDec.lessThan(saldoPendiente)) {
+                // Opcional: Permitir pagos parciales, pero avisar si se desea
+                // Swal.fire({ title: 'Monto insuficiente', icon: 'warning', width: '360px' })
+                // En Kiosco generalmente se permite parcial, así que lo dejamos pasar
+            }
+        } else {
+            // Tarjetas/Transferencias: El pago debe ser exacto o menor a la deuda, no mayor
             montoRecibido = montoAplicado;
+            if (montoActualDec.greaterThan(saldoPendiente)) {
+                 Swal.fire({ title: 'Monto excesivo', text: `Solo restan ${formatCurrency(saldoPendiente)}`, icon: 'warning' });
+                return;
+            }
         }
 
-        setPagosRealizados(prev => [...prev, {
+        const nuevoPago = {
             metodo: metodoPagoActual,
-            monto: montoAplicado,
-            monto_recibido: montoRecibido 
-        }]);
-        
-        setMontoPagoActual(""); // Limpiar input después de agregar
+            monto: montoAplicado.round(), 
+            monto_recibido: montoRecibido.round(), 
+        };
+
+        setPagosRealizados(prev => [...prev, nuevoPago]);
+        setMontoPagoActual(""); // Limpiar input
     };
 
     // --- 7. FINALIZAR ---
@@ -284,6 +308,7 @@ function PedidoLanding() {
         if (saldoPendiente.greaterThan(0)) return Swal.fire('Pago incompleto', `Falta: ${formatCurrency(saldoPendiente)}`, 'warning');
         if (!clienteData) return Swal.fire('Falta Cliente', 'Ingresa tu RUT', 'warning');
         if (!fechaEntrega) return Swal.fire('Falta Fecha', 'Selecciona fecha de retiro', 'warning');
+        
         setIsProcessing(true);
         const ventaPayload = {
             cliente_id: clienteData.id,
@@ -292,13 +317,18 @@ function PedidoLanding() {
             items: cart.map(i => ({ producto_id: i.id, cantidad: i.cantidad, precio_unitario: i.precio_unitario.toString() })), 
             pagos: pagosRealizados.map(p => ({ metodo: p.metodo, monto: p.monto.toString(), monto_recibido: p.monto_recibido.toString() }))
         };
-        console.log('Enviando pedido:', ventaPayload);
+        
         try {
-            const response = await client.post('/pos/api/kiosco/crear_pedido/', ventaPayload);
-            console.log('Pedido creado:', response.data);
+            await client.post('/pos/api/kiosco/crear_pedido/', ventaPayload);
+            
+            let msg = 'Gracias por tu compra';
+            if(vueltoTotalFinal.greaterThan(0)) {
+                msg += `\n\nTU VUELTO: ${formatCurrency(vueltoTotalFinal)}`;
+            }
+
             Swal.fire({
                 title: '¡Pedido Enviado!', 
-                text: 'Gracias por tu compra', 
+                text: msg, 
                 icon: 'success'
             }).then(() => {
                 setCart([]);
@@ -307,6 +337,7 @@ function PedidoLanding() {
                 setRutCliente("");
                 setFechaEntrega("");
                 setMontoPagoActual("");
+                setMetodoPagoActual("EFE");
             });
         } catch (err) {
             console.error('Error creando pedido:', err);
@@ -340,7 +371,7 @@ function PedidoLanding() {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     // ==========================================
-    // RENDER HELPER (CART SIDEBAR) - CORREGIDO
+    // RENDER HELPER (CART SIDEBAR)
     // ==========================================
     const renderCartContent = () => (
         <div className="d-flex flex-column h-100">
@@ -377,6 +408,7 @@ function PedidoLanding() {
                     <span className="fs-4 fw-bold" style={{color: 'var(--primary-color)'}}>{formatCurrency(cartTotal)}</span>
                 </div>
                 
+                {/* INPUT CLIENTE */}
                 <div className="input-group mb-2">
                     <input className="form-control" placeholder="RUT (Ej: 11111111-1)" 
                         value={rutCliente} onChange={handleRutChange}
@@ -400,34 +432,65 @@ function PedidoLanding() {
                     />
                 </div>
 
+                {/* --- SECCIÓN PAGOS ESTILO POS --- */}
                 {clienteData && cart.length > 0 && (
                     <div className="animate__animated animate__fadeInUp">
-                        {!saldoPendiente.isZero() && (
-                            <div className="input-group input-group-sm mb-2">
-                                <select className="form-select" style={{maxWidth:'80px'}} value={metodoPagoActual} onChange={e => setMetodoPagoActual(e.target.value)}>
-                                    {METODOS_PAGO.map(m => <option key={m.code} value={m.code}>{m.label}</option>)}
-                                </select>
-                                
-                                {/* AQUÍ SE AGREGÓ EL INPUT QUE FALTABA */}
-                                <input 
-                                    type="number" 
-                                    className="form-control" 
-                                    placeholder={`Resto: ${saldoPendiente.toNumber()}`}
-                                    value={montoPagoActual}
-                                    onChange={(e) => setMontoPagoActual(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleAddPago()}
-                                />
+                        
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                            <span className="small fw-bold text-danger">PENDIENTE</span>
+                            <span className="fw-bold text-danger">{formatCurrency(saldoPendiente)}</span>
+                        </div>
 
-                                <button className="btn btn-warning" onClick={handleAddPago} style={{minWidth: '60px'}}>
-                                    {montoPagoActual ? 'Agregar' : 'Todo'}
-                                </button>
+                        {/* LISTA DE PAGOS YA REALIZADOS */}
+                        {pagosRealizados.length > 0 && (
+                            <div className="mb-2 border p-2 rounded bg-light">
+                                <h6 className="small fw-bold border-bottom pb-1 mb-1">Pagos:</h6>
+                                {pagosRealizados.map((p, index) => (
+                                    <div key={index} className="d-flex justify-content-between small">
+                                        <span className="text-muted">{METODOS_PAGO.find(m => m.code === p.metodo)?.label || p.metodo}</span>
+                                        <span className="fw-bold">{formatCurrency(p.monto)}</span>
+                                    </div>
+                                ))}
                             </div>
                         )}
+
+                        {/* FORMULARIO DE PAGO (SOLO SI HAY DEUDA) */}
+                        {!saldoPendiente.isZero() && (
+                            <>
+                                <div className="input-group input-group-sm mb-2">
+                                    <select className="form-select" style={{maxWidth:'100px'}} value={metodoPagoActual} onChange={e => setMetodoPagoActual(e.target.value)}>
+                                        {METODOS_PAGO.map(m => <option key={m.code} value={m.code}>{m.label}</option>)}
+                                    </select>
+                                    
+                                    <input 
+                                        type="number" 
+                                        className="form-control" 
+                                        placeholder={`Resto: ${saldoPendiente.toNumber()}`}
+                                        value={montoPagoActual}
+                                        onChange={(e) => setMontoPagoActual(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleAddPago()}
+                                    />
+
+                                    <button className="btn btn-warning" onClick={handleAddPago} style={{minWidth: '60px'}} disabled={!montoPagoActual}>
+                                        Pagar
+                                    </button>
+                                </div>
+
+                                {/* ALERTA DE VUELTO CALCULADO EN TIEMPO REAL */}
+                                {metodoPagoActual === 'EFE' && vueltoCalculado.greaterThan(0) && (
+                                    <div className="alert alert-info py-1 mb-2 text-center small">
+                                        Vuelto: <b>{formatCurrency(vueltoCalculado)}</b>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                        
+                        {/* BOTÓN FINALIZAR */}
                         <button 
                             className={`btn w-100 fw-bold py-2 ${saldoPendiente.isZero() ? 'text-white' : 'btn-secondary'}`}
                             style={saldoPendiente.isZero() ? { backgroundColor: 'var(--success-color, #28a745)' } : {}}
                             onClick={handleFinalizarCompra} disabled={saldoPendiente.greaterThan(0) || isProcessing}>
-                            {isProcessing ? '...' : (vueltoTotalFinal.greaterThan(0) ? `Finalizar (Vuelto: ${formatCurrency(vueltoTotalFinal)})` : 'CONFIRMAR')}
+                            {isProcessing ? '...' : (vueltoTotalFinal.greaterThan(0) ? `FINALIZAR (Vuelto: ${formatCurrency(vueltoTotalFinal)})` : 'CONFIRMAR')}
                         </button>
                     </div>
                 )}
