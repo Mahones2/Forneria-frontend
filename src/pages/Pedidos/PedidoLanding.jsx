@@ -29,6 +29,51 @@ const getImageUrl = (url) => {
     return `${baseURL}${url}`;
 };
 
+// --- NUEVOS HELPERS PARA RUT (SOLUCIÓN A TU PROBLEMA) ---
+const formatearRut = (rut) => {
+    // Elimina cualquier caracter que no sea número o k/K
+    const valorLimpio = rut.replace(/[^0-9kK]/g, '');
+    
+    // Si es muy corto, retornar tal cual para permitir borrar
+    if (valorLimpio.length <= 1) return valorLimpio;
+
+    // Separar cuerpo y dígito verificador
+    const cuerpo = valorLimpio.slice(0, -1);
+    const dv = valorLimpio.slice(-1).toUpperCase();
+
+    // Agregar puntos al cuerpo (regex para miles)
+    const cuerpoFormateado = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+    // Retornar formato: 12.345.678-K
+    return `${cuerpoFormateado}-${dv}`;
+};
+
+const validarRutChileno = (rut) => {
+    if (!rut || rut.length < 8) return false;
+    
+    // Limpiar para validar matemáticas (sacar puntos y guion)
+    const clean = rut.replace(/[^0-9kK]/g, '').toUpperCase();
+    const cuerpo = clean.slice(0, -1);
+    const dv = clean.slice(-1);
+    
+    if (!/^[0-9]+$/.test(cuerpo)) return false; // Asegurar que cuerpo sea numérico
+
+    let suma = 0;
+    let multiplicador = 2;
+    
+    // Algoritmo Módulo 11
+    for(let i = cuerpo.length - 1; i >= 0; i--) {
+        suma += parseInt(cuerpo[i]) * multiplicador;
+        multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+    }
+    
+    const res = 11 - (suma % 11);
+    const dvCalculado = res === 11 ? '0' : res === 10 ? 'K' : res.toString();
+    
+    return dv === dvCalculado;
+};
+
+
 function PedidoLanding() {
     // --- ESTADOS DE DATOS ---
     const [productos, setProductos] = useState([]);
@@ -209,16 +254,24 @@ function PedidoLanding() {
         }, new Decimal(0)).round();
     }, [pagosRealizados]);
 
-    // --- 5. CLIENTE ---
+    // --- 5. CLIENTE (ARREGLADO) ---
     const handleRutChange = (e) => {
-        let valor = e.target.value;
-        valor = valor.replace(/[^0-9kK-]/g, '');
-        if (valor.length > 12) return;
-        setRutCliente(valor.toUpperCase());
+        // Al escribir, aplicamos el formateo automático (puntos y guion)
+        setRutCliente(formatearRut(e.target.value));
     };
 
     const handleSearchClient = async (rut = rutCliente) => {
         if (!rut) return;
+
+        // Validamos matemáticamente el RUT antes de llamar a la API
+        if (!validarRutChileno(rut)) {
+            return Swal.fire({
+                icon: 'warning', 
+                title: 'RUT Inválido', 
+                text: 'El dígito verificador no corresponde o el formato es incorrecto.'
+            });
+        }
+
         setIsSearchingClient(true);
         try {
             const res = await client.get(`/pos/api/kiosco/validar_cliente/?rut=${rut}`);
@@ -240,6 +293,12 @@ function PedidoLanding() {
 
     const registrarClienteDesdeModal = async () => {
         if(!nuevoCliente.nombre || !rutCliente) return Swal.fire("Faltan datos", "Nombre y RUT obligatorios", "warning");
+        
+        // Verificación extra al registrar
+        if (!validarRutChileno(rutCliente)) {
+            return Swal.fire("RUT Inválido", "Por favor corrige el RUT antes de guardar.", "warning");
+        }
+
         const clientePayload = {
             rut: rutCliente,
             nombre: nuevoCliente.nombre,
@@ -709,7 +768,7 @@ function PedidoLanding() {
                                             <tr><th>Calorías</th><td>{nutricional.calorias} kcal</td></tr>
                                             <tr><th>Proteínas</th><td>{nutricional.proteinas} g</td></tr>
                                             <tr><th>Grasas</th><td>{nutricional.grasas} g</td></tr>
-                                            <tr><th>Carbos</th><td>{nutricional.carbohidratos} g</td></tr>
+                                            <tr><th>Hidratos de carbono</th><td>{nutricional.carbohidratos} g</td></tr>
                                             <tr><th>Azúcares</th><td>{nutricional.azucares} g</td></tr>
                                             <tr><th>Sodio</th><td>{nutricional.sodio} mg</td></tr>
                                         </tbody>
