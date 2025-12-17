@@ -29,7 +29,7 @@ function POS() {
     const [categorias, setCategorias] = useState([]);
     const [etiquetasDisponibles, setEtiquetasDisponibles] = useState([]);
 
-    [import { useEffect, useState, useMemo, useCallback } from "react";
+    import { useEffect, useState, useMemo, useCallback } from "react";
     const [nutricional, setNutricional] = useState(null);
     const [showNutricionalModal, setShowNutricionalModal] = useState(false);
     
