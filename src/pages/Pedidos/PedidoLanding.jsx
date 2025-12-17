@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 
 // --- CONSTANTES (IGUAL QUE POS) ---
 const METODOS_PAGO = [
-    { code: 'EFE', label: 'Efectivo' },
     { code: 'DEB', label: 'Débito' },
     { code: 'CRE', label: 'Crédito' },
     { code: 'TRA', label: 'Transferencia' }
