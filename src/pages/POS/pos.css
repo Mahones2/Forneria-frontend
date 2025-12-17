@@ -31,3 +31,191 @@
     /* Asegura que el texto siga siendo blanco */
     color: #fff; 
 }
+
+/* ========== LAYOUT POS ========== */
+
+/* Container del POS - sin padding */
+.container-fluid.bg-light {
+    min-height: 100vh;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Row principal - sin márgenes */
+.container-fluid.bg-light > .row {
+    margin: 0 !important;
+    min-height: 100vh;
+}
+
+/* Columna de productos */
+.container-fluid.bg-light .col-md-8,
+.container-fluid.bg-light .col-lg-9 {
+    padding: 1.5rem;
+    overflow-y: auto;
+    max-height: 100vh;
+}
+
+/* Columna del carrito - STICKY */
+.container-fluid.bg-light .col-md-4,
+.container-fluid.bg-light .col-lg-3 {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 0;
+}
+
+/* ========== CARRITO STICKY (LEGACY - puede eliminarse) ========== */
+
+/* Hacer el carrito sticky/fixed en desktop y tablets */
+@media (min-width: 768px) {
+    .col-md-4.bg-white.border-start.shadow {
+        position: sticky;
+        top: 0;
+        max-height: 100vh;
+        overflow-y: auto;
+        align-self: flex-start;
+    }
+}
+
+/* ========== RESPONSIVE POS ========== */
+
+/* Tablets y pantallas medianas */
+@media (max-width: 991px) {
+    /* Ajustar padding */
+    .container-fluid.bg-light .col-md-8,
+    .container-fluid.bg-light .col-lg-9 {
+        padding: 1rem;
+    }
+
+    /* Grid de productos más compacto */
+    .row.g-3 {
+        gap: 0.75rem !important;
+    }
+
+    /* Ajustar columnas de productos */
+    .col-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
+
+/* Móviles */
+@media (max-width: 767px) {
+    /* Título más pequeño */
+    h2.text-primary {
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Resetear layout para móvil */
+    .container-fluid.bg-light > .row {
+        flex-direction: column;
+    }
+
+    .container-fluid.bg-light .col-md-8,
+    .container-fluid.bg-light .col-lg-9,
+    .container-fluid.bg-light .col-md-4,
+    .container-fluid.bg-light .col-lg-3 {
+        position: relative;
+        top: auto;
+        height: auto;
+        max-height: none;
+        width: 100%;
+        max-width: 100%;
+        flex: 0 0 100%;
+    }
+
+    .container-fluid.bg-light .col-md-8,
+    .container-fluid.bg-light .col-lg-9 {
+        padding: 0.75rem;
+    }
+
+    /* Título más pequeño */
+    h2.text-primary {
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Búsqueda y filtros */
+    .d-flex.justify-content-left {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 0.5rem;
+    }
+
+    .d-flex.gap-2.ms-5 {
+        margin-left: 0 !important;
+        flex-direction: column;
+        gap: 0.5rem !important;
+    }
+
+    /* Productos en una sola columna */
+    .col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* Cards de productos */
+    .card .card-body {
+        padding: 0.75rem !important;
+    }
+
+    .card h6 {
+        font-size: 0.9rem;
+    }
+
+    .card .small {
+        font-size: 0.8rem;
+    }
+
+    /* Reducir altura de imágenes */
+    .card img {
+        max-height: 80px !important
+    /* Items del carrito */
+    .list-group-item {
+        padding: 0.5rem !important;
+        font-size: 0.85rem;
+    }
+
+    /* Botones más compactos */
+    .btn-sm {
+        padding: 0.15rem 0.35rem;
+        font-size: 0.75rem;
+    }
+
+    /* Área de pago */
+    .bg-light.p-3 {
+        padding: 0.75rem !important;
+    }container-fluid.bg-light .col-md-8,
+    .container-fluid.bg-light .col-lg-9 {
+        padding: 0.5rem
+    .fs-5 {
+        font-size: 0.95rem !important;
+    }
+
+    .fs-4 {
+        font-size: 1.1rem !important;
+    }
+}
+
+/* Móviles pequeños */
+@media (max-width: 575px) {
+    /* Padding mínimo */
+    .p-4 {
+        padding: 0.75rem !important;
+    }
+
+    /* Botones de acción full width */
+    .btn.w-100 {
+        font-size: 0.9rem;
+    }
+
+    /* Inputs más pequeños */
+    .form-control,
+    .form-select {
+        font-size: 0.9rem;
+    }
+}
+
+
