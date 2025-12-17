@@ -7,7 +7,6 @@ import Swal from 'sweetalert2';
 
 // Constantes
 const METODOS_PAGO = [
-    { code: 'EFE', label: 'Efectivo' },
     { code: 'DEB', label: 'Débito' },
     { code: 'CRE', label: 'Crédito' },
     { code: 'TRA', label: 'Transferencia' }
